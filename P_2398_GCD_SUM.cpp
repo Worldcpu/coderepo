@@ -56,12 +56,12 @@ void getphi()
 int main()
 {
     read(n);
-    read(m);
+    m=n;
     getphi();
     lint ans=0;
-    for(lint i=1;i<=min(n,m);i++){
-        ans+=phi[i]*(n/i)*(m/i);
+    for(lint i=1;i<=n;i++){
+        ans+=phi[i]*(n/i)*(n/i);
     }
-    write(ans*2-n*m);
+    write(ans);
     return 0;
 }

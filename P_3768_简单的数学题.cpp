@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 #define ll long long
 using namespace std;
-constexpr int MN = 1e6 + 15;
+constexpr int MN = 2e6 + 15;
 ll inv2, inv6, P, n, fsum[MN + 15], phi[MN + 15];
 unordered_map<ll, ll> ump;
 vector<bool> vis(MN + 15);
@@ -110,14 +110,14 @@ int main()
 {
     P = read();
     n = read();
-    if(P==1000000007&&n==9786510294){
-        cout<<27067954;
-        return 0;
-    }
-    if(P==1000000009&&n==9876543120){
-        cout<<241214378;
-        return 0;
-    }
+    // if(P==1000000007&&n==9786510294){
+    //     cout<<27067954;
+    //     return 0;
+    // }
+    // if(P==1000000009&&n==9876543120){
+    //     cout<<241214378;
+    //     return 0;
+    // }
     getphi();
     inv6 = ksm(6, P - 2);
     inv2 = ksm(2, P - 2);
