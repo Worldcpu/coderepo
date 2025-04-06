@@ -1,0 +1,69 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int line[65],len,nxt[65],end,sum;
+bool vis[65];
+bool cmp(const int a,const int b)
+{
+   return a>b;
+}
+bool perm(int pre,int fromp)
+{
+   int i;
+   if(pre%len==0)
+   {
+   	if(sum-pre==len) return true;//优化VII 
+   	for(i=2;i<=end && vis[i];i++) ;//优化V 
+   	vis[i]=true;
+   	if(perm(pre+line[i],2)) return true;
+   	vis[i]=false;//后面是else不运行，直接到后面的return false；这就是优化VIII 
+   }
+   else for(;fromp<=end;fromp++)//优化VI，直接从继承过来的fromp开始遍历 
+   {
+      	if(!vis[fromp])//优化IV 
+      	{
+      		if(pre%len+line[fromp]<=len)
+      		{
+      			vis[fromp]=true;
+  				if(perm(pre+line[fromp],fromp)) return true;//fromp即为优化VI
+   			vis[fromp]=false;
+   			if(pre%len+line[fromp]==len) return false;//优化IX 
+   		}
+   		fromp=nxt[line[fromp]];//优化II 
+   	}
+   }
+   return false;
+}
+
+int main()
+{
+   int n,iA,in,maxi=0,cha=0,cun=0;
+   scanf("%d\n",&n);
+   for (iA=1;iA<=n;iA++)
+   {
+   	scanf("%d",&in);
+   	if(in<=50)
+   	{
+   		maxi=max(maxi,in);
+   		sum+=in;
+   		line[iA-cha]=in;
+   	}
+   	else cha++;
+   }
+   sort(line+1,line+n-cha+1,cmp);//优化I 
+   for(iA=1;iA<=n-cha;iA++)
+   	if(line[iA]!=cun)
+   	{
+   		nxt[cun]=iA-1;
+   		cun=line[iA];
+   	}
+   end=n-cha;vis[1]=true;nxt[line[end]]=end;
+   for(len=maxi;len<=sum/2;len++)
+   {
+   	if(sum%len!=0) continue;//优化III 
+   	if(perm(line[1],2)) break;
+   }
+   if(len>sum/2) cout<<sum;
+   else cout<<len;
+   return 0;
+}
