@@ -4,6 +4,6 @@ constexpr int MN=1e5+15;
 
 int main(){
 
-    cout<<"AWA";
+    cout<<"AWAa";
     return 0;
 }
