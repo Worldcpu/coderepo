@@ -22,7 +22,7 @@ int main(){
     sort(pos+1,pos+1+v);
     f[0][0]=0;
     for(int i=1;i<=v;i++){
-        for(int j=0;j<=p;j++){
+        for(int j=1;j<=p;j++){
             for(int k=0;k<i;k++){
                 f[i][j]=min(f[i][j],f[k][j-1]+val(k+1,i));
             }
