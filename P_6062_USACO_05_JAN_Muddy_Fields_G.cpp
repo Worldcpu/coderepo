@@ -1,9 +1,9 @@
 #include<bits/stdc++.h>
 using namespace std;
-constexpr int MN=5200;
-int n,m,p[MN],h[MN][MN],s[MN][MN],sumh,sums;
+constexpr int MN=1e6,MP=1200;
+int n,m,p[MN<<2],h[MP][MP],s[MP][MP],sumh=1,sums=1;
 bool vis[MN];
-char mp[MN][MN];
+char mp[MP][MP];
 vector<int> adj[MN];
 
 bool dfs(int u){
@@ -25,14 +25,14 @@ int main(){
         for(int j=1;j<=m;j++){
             cin>>mp[i][j];
             if(mp[i][j]=='*'){
-                h[i][j]=(mp[i-1][j]=='*'?h[i-1][j]:++sumh);
-                s[i][j]=(mp[i][j-1]=='*'?s[i][j-1]:++sums);
-                adj[h[i][j]].push_back(s[i][j]+n*m+1);
+                h[i][j]=(mp[i-1][j]=='*'?h[i-1][j]:sumh++);
+                s[i][j]=(mp[i][j-1]=='*'?s[i][j-1]:sums++);
+                adj[h[i][j]].push_back(s[i][j]);
             }
         }
     }
     int ans=0;
-    for(int i=1;i<=sumh;i++){
+    for(int i=1;i<sumh;i++){
         memset(vis,0,sizeof(vis));
         ans+=dfs(i);
     }

@@ -1,0 +1,1 @@
+{"name":"Local: t2","url":"/home/noi/桌面/noip/wjy/contest/D3/t2.cpp","tests":[{"id":1745563010660,"input":"5\n1 7 3 5 4\n1 3\n2 3\n3 4\n4 5\n4 6\n","output":"16"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"/home/noi/桌面/noip/wjy/contest/D3/t2.cpp","group":"local","local":true}

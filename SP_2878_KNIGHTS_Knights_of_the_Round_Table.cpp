@@ -92,12 +92,6 @@ void solve(){
     int ans=n;
     for(int i=1;i<=n;i++) if(vis[i]) ans--;
     cout<<ans<<'\n';
-    if(ans==7){
-        cout<<"WA!\n";
-        for(auto p:input){
-            cout<<p.first<<" "<<p.second<<'\n';
-        }
-    }
 }
 
 int main(){
