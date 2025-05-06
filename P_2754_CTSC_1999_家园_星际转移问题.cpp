@@ -19,10 +19,7 @@ inline int gp(int id,int t){
 }
 
 bool bfs(){
-    for(int i=0;i<=maxp;i++){
-        dep[i]=-1;
-    }
-    dep[T]=-1;
+    memset(dep,-1,sizeof(dep));
     dep[S]=0;
     queue<int> q;
     q.push(S);
@@ -60,8 +57,7 @@ int dfs(int u,int lim){
 int dinic(){
     int ans=0,flow;
     while(bfs()){
-        // cout<<"QWQ\n";
-        ans+=dfs(S,INF);
+        while(flow=dfs(S,INF)) ans+=flow;
     }
     return ans;
 }
@@ -94,7 +90,7 @@ int main(){
         cout<<0;
         return 0;
     }
-    int ans=0;
+    int ans=0,mxflow=0;
     for(ans=1;;ans++){
         // if(ans>=7) break;
         add(S,gp(n+1,ans-1),INF);
@@ -106,7 +102,7 @@ int main(){
             else y=gp(sp[i][y],ans);
             add(x,y,h[i]);
         }
-        int mxflow=dinic();
+        mxflow+=dinic();
         // cout<<mxflow<<'\n';
         if(mxflow>=K){
             cout<<ans;
