@@ -1,11 +1,15 @@
 #include<bits/stdc++.h>
 using namespace std;
-constexpr int MN=2e5+15;
+constexpr int MN=4e5+15;
+// struct query
+// {
+//     int l,r;
+// }q[MN];
 struct query{
-    int l,r,id;
+    int l,r,k,id;
 }q[MN];
-int n,m,len,klen,maxx,a[MN],ans[MN],cnt[MN],sum1[MN],pos[MN],L[MN],R[MN];
-bool vis[MN],tag[MN];
+int n,m,len,klen,maxx,ret,tot,b[MN],a[MN],ans[MN],cnt[MN],sum[MN],pos[MN],L[MN],R[MN];
+int vis[MN],tag[MN];
 
 
 bool cmp(query x,query y){
@@ -19,7 +23,7 @@ void init(){
         L[i]=R[i-1]+1;
         R[i]=i*klen;
     }
-    L[1]=0;
+    // L[1]=0;
     if(R[klen]<maxx){
         R[++klen]=maxx;
         L[klen]=R[klen-1]+1;
@@ -33,55 +37,55 @@ void init(){
 
 void update(int x,int k){
     cnt[x]+=k;
-    if(cnt[x]==1&&k==1){
-        vis[x]=1;
-        sum1[pos[x]]++;
-    }
-    if(cnt[x]==0&&k==-1){
-        vis[x]=0;
-        sum1[pos[x]]--;
-    }
-    if(sum1[pos[x]]==R[pos[x]]-L[pos[x]]+1){
-        tag[pos[x]]=1;
-    }else tag[pos[x]]=0;
-}
-
-int querymin(){
-    int p=0;
-    for(int i=1;i<=klen;i++){
-        if(!tag[i]){
-            p=i;
-            break;
-        }
-    }
-    if(!p) return maxx+1;
-    for(int i=L[p];i<=R[p];i++){
-        if(!vis[i]){
-            return i;
-        }
-    }
-    return 0;
+    sum[pos[x]]+=k;
+    ret+=k;
 }
 
 void add(int x){
-    update(a[x],1);
+    if(vis[a[x]]){
+        update(vis[a[x]],-1);
+    }
+    vis[a[x]]++;
+    update(vis[a[x]],1);
 }
 
 void del(int x){
-    update(a[x],-1);
+    update(vis[a[x]],-1);
+    vis[a[x]]--;
+    if(vis[a[x]]) update(vis[a[x]],1);
+}
+
+int querysum(int x){
+    if(ret<x) return -1;
+    for(int i=1;i<=klen;i++){
+        if(x>sum[i]) x-=sum[i];
+        else{
+            for(int j=L[i];j<=R[i];j++){
+                if(x>cnt[j]) x-=cnt[j];
+                else return j;
+            }
+        }
+    }
+    return -1;
 }
 
 int main(){
     cin>>n>>m;
-    len=sqrt(n);
     for(int i=1;i<=n;i++){
         cin>>a[i];
+        b[i]=a[i];
+    }
+    sort(b+1,b+1+n);
+    tot=unique(b+1,b+1+n)-b-1;
+    for(int i=1;i<=n;i++){
+        a[i]=lower_bound(b+1,b+1+tot,a[i])-b;
         maxx=max(maxx,a[i]);
     }
+    len=sqrt(n);
+    maxx=n;
     init();
-    // sg.build(1,1,n);
     for(int i=1;i<=m;i++){
-        cin>>q[i].l>>q[i].r;
+        cin>>q[i].l>>q[i].r>>q[i].k;
         q[i].id=i;
     }
     sort(q+1,q+1+m,cmp);
@@ -103,8 +107,7 @@ int main(){
             del(r);
             r--;
         }
-        // maxx=sg.query(1,q[i].l,q[i].r);
-        ans[q[i].id]=querymin();
+        ans[q[i].id]=querysum(q[i].k);
     }
     for(int i=1;i<=m;i++) cout<<ans[i]<<'\n';
     return 0;

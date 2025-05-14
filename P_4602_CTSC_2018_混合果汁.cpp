@@ -1,82 +1,91 @@
 #include<bits/stdc++.h>
 #define int long long
 using namespace std;
-constexpr int MN=1e6+15;
-struct query{
-    int op,k,a,c,s;
-}q[MN];
-int n,m,tot,ls[MN],a[MN];
+constexpr int MN=4e5+15,INF=LONG_LONG_MAX;
+struct Query{
+    int g,l,id;
+}q[MN],lq[MN],rq[MN];
+struct Node{
+    int d,p,l;
+}a[MN];
+int n,m,ans[MN];
 
-struct BIT{
-    private:
-        int t[MN];
+bool cmp(Node x,Node y){
+    return x.d>y.d;
+}
 
-    public:
+struct BIT
+{
+    int t[MN],c[MN],sum;
 
-    inline int lowbit(int x){
+    int lowbit(int x){
         return x&-x;
     }
 
-    int query(int x){
-        int ret=0;
-        while(x){
-            ret+=t[x];
-            x-=lowbit(x);
-        }
-        return ret;
-    }
-
     void update(int x,int k){
+        int v=x*k;
+        sum+=k;
         while(x<MN){
             t[x]+=k;
+            c[x]+=v;
             x+=lowbit(x);
         }
     }
 
-    int get(int x){
-        return t[x];
+    int query(int x){
+        if(x>sum) return INF;
+        int p=0,s=0;
+        for(int i=20;i>=0;i--){
+            int np=p+(1<<i);
+            if(np>=MN||t[np]>=x) continue;
+            p=np;
+            x-=t[np];
+            s+=c[np];
+        }
+        return s+(p+1)*x;
     }
 
 }bit;
 
-void lisan(){
-    sort(ls+1,ls+1+tot);
-    tot=unique(ls+1,ls+1+tot)-ls-1;
-    for(int i=1;i<=m;i++){
-        if(q[i].op){
-            q[i].s=lower_bound(ls+1,ls+1+tot,q[i].s)-ls;
-        }else q[i].a=lower_bound(ls+1,ls+1+tot,q[i].a)-ls;
+void solve(int l,int r,int st,int ed){
+    if(st>ed) return;
+    if(l==r){
+        if(l>n) return;
+        for(int i=st;i<=ed;i++){
+            ans[q[i].id]=a[l].d;
+        }
+        return;
     }
+    int mid=(l+r)>>1,lt=0,rt=0;
+    for(int i=l;i<=mid;i++){
+        bit.update(a[i].p,a[i].l);
+    }
+    for(int i=st;i<=ed;i++){
+        int cnt=bit.query(q[i].l);
+        if(cnt<=q[i].g) lq[++lt]=q[i];
+        else rq[++rt]=q[i];
+    }
+    for(int i=1;i<=lt;i++) q[st+i-1]=lq[i];
+    for(int i=1;i<=rt;i++) q[st+lt+i-1]=rq[i];
+    solve(mid+1,r,st+lt,ed);
+    for(int i=l;i<=mid;i++){
+        bit.update(a[i].p,-a[i].l);
+    }
+    solve(l,mid,st,st+lt-1);
 }
 
 signed main(){
     cin>>n>>m;
-    for(int i=1;i<=m;i++){
-        char op;
-        int x,y;
-        cin>>op;
-        if(op=='U'){
-            q[i].op=0;
-            cin>>q[i].k>>q[i].a;
-            ls[++tot]=q[i].a;
-        }else{
-            q[i].op=1;
-            cin>>q[i].c>>q[i].s;
-            ls[++tot]=q[i].s;
-        }
+    for(int i=1;i<=n;i++){
+        cin>>a[i].d>>a[i].p>>a[i].l;
     }
-    lisan();
     for(int i=1;i<=m;i++){
-        if(!q[i].op){
-            if(a[q[i].k]) bit.update(a[q[i].k],-1);
-            if(a[q[i].k]=q[i].a) bit.update(a[q[i].k],1);
-        }else{
-            int p=0,cnt=0,sum=0;
-            for(int i=20;i>=0;i--){
-                int np=p+bit.query()
-                p+=bit.query()
-            }
-        }
+        cin>>q[i].g>>q[i].l;
+        q[i].id=i;
     }
+    sort(a+1,a+1+n,cmp);
+    memset(ans,-1,sizeof(ans));
+    solve(1,n+1,1,m);
+    for(int i=1;i<=m;i++) cout<<ans[i]<<'\n';
     return 0;
 }

@@ -1,63 +1,78 @@
 #include<bits/stdc++.h>
 using namespace std;
-const int MN=2e5+15;
-struct segtree
-{
-    int val,l,r;
-}t[MN<<5];
-int n,m,root[MN],a[MN],b[MN],tot;
-int newnode(int p){
-    t[++tot]=t[p];
-    return tot;
-}
-void build(int &p,int l,int r){
-    p=++tot;
-    if(l==r) return;
-    int mid=l+r>>1;
-    build(t[p].l,l,mid);
-    build(t[p].r,mid+1,r);
-}
-int update(int p,int l,int r,int k){
-    int cp=newnode(p);
-    t[cp].val+=1;
-    if(l==r){
-        return cp;
+constexpr int MN=2e5+15,INF=1e9;
+struct Query{
+    int x,y,z,id;
+}q[MN],lq[MN],rq[MN];
+int n,m,qtot,a[MN],ans[MN];
+
+struct BIT{
+    int t[MN];
+
+    int lowbit(int x){
+        return x&-x;
     }
-    int mid=l+r>>1;
-    if(k<=mid){
-        t[cp].l=update(t[p].l,l,mid,k);
-    }else t[cp].r=update(t[p].r,mid+1,r,k);
-    return cp;
-}
-int query(int u,int v,int l,int r,int k){
-    if(l==r){
-        return b[l];
+
+    int query(int x){
+        int ret=0;
+        while(x){
+            ret+=t[x];
+            x-=lowbit(x);
+        }
+        return ret;
     }
-    int bj=t[t[v].l].val-t[t[u].l].val;
-    int mid=l+r>>1;
-    if(k<=bj){
-        return query(t[u].l,t[v].l,l,mid,k);
-    }else return query(t[u].r,t[v].r,mid+1,r,k-bj);
+
+    void update(int x,int k){
+        while(x<MN){
+            t[x]+=k;
+            x+=lowbit(x);
+        }
+    }
+
+}bit;
+
+void solve(int l,int r,int st,int ed){
+    if(st>ed) return;
+    if(l==r){
+        for(int i=st;i<=ed;i++){
+            if(q[i].id) ans[q[i].id]=l;
+        }
+        return;
+    }
+    int mid=(l+r)>>1,lt=0,rt=0;
+    for(int i=st;i<=ed;i++){
+        if(q[i].id==0){
+            if(q[i].y<=mid){
+                bit.update(q[i].x,1);
+                lq[++lt]=q[i];
+            }else rq[++rt]=q[i];
+        }else{
+            int cnt=bit.query(q[i].y)-bit.query(q[i].x-1);
+            if(cnt>=q[i].z) lq[++lt]=q[i];
+            else q[i].z-=cnt,rq[++rt]=q[i];
+        }
+    }
+    for(int i=ed;i>=st;i--) if(q[i].id==0&&q[i].y<=mid) bit.update(q[i].x,-1);
+    for(int i=1;i<=lt;i++) q[st+i-1]=lq[i];
+    for(int i=1;i<=rt;i++) q[st+lt+i-1]=rq[i];
+    solve(l,mid,st,st+lt-1);
+    solve(mid+1,r,st+lt,ed);
 }
+
 int main(){
     cin>>n>>m;
     for(int i=1;i<=n;i++){
         cin>>a[i];
-        b[i]=a[i];
+        q[++qtot]={i,a[i],0,0};
     }
-    sort(b+1,b+1+n);
-    int q=unique(b+1,b+1+n)-b-1;
-    build(root[0],1,q);
-    for(int i=1;i<=n;i++){
-        int x=lower_bound(b+1,b+1+q,a[i])-b;
-        root[i]=update(root[i-1],1,q,x);
-    }
-    while (m--)
-    {
+    for(int i=1;i<=m;i++){
         int l,r,k;
         cin>>l>>r>>k;
-        cout<<query(root[l-1],root[r],1,q,k)<<'\n';
+        q[++qtot]={l,r,k,i};
     }
-    
+    solve(-INF,INF,1,qtot);
+    for(int i=1;i<=m;i++){
+        cout<<ans[i]<<'\n';
+    }
     return 0;
 }
