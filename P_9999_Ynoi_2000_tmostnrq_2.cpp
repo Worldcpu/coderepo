@@ -306,7 +306,7 @@ namespace sol{
         p=st[top];
         tmp=frt[p];
         while(p!=x){
-            if(fhq.getr(p)==st[top]) 
+            if(t[p].rson==st[top]) 
                 sum+=t[t[p].lson].siz+t[p].sum;
             p=st[top--];
         }
@@ -369,6 +369,7 @@ namespace sol{
     }
 }
 signed main(){
+    freopen("dp.out","r",stdin);
     read(n,n0,m);
     for(int i=2;i<=n;i++){
         read(Tree::fa[i]);

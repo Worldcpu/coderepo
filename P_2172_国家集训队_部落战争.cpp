@@ -1,13 +1,13 @@
 #include<bits/stdc++.h>
 using namespace std;
-const int MN=114514,INF=1e9;
-int s,t,m,n,r,c,match[MN];
+const int MN=1e6,INF=1e9;
+int m,n,r,c,match[MN];
 char mapp[55][55];
 vector<int> adj[MN];
 bool vis[MN];
 
 int getpos(int x,int y){
-    return (x-1)*n+y;
+    return (x-1)*m+y;
 }
 
 int dfs(int u){
@@ -25,7 +25,6 @@ int dfs(int u){
 
 int main(){
     cin>>n>>m>>r>>c;
-    s=MN-3,t=MN-2;
     int dx[4]={r,r,c,c};
     int dy[5]={c,-c,r,-r};
     for(int i=1;i<=n;i++){
@@ -48,16 +47,15 @@ int main(){
             }
         }
     }
-    int ret=0,cnt=0;
+    int ret=0;
     for(int i=1;i<=n;i++){
         for(int j=1;j<=m;j++){
             if(mapp[i][j]=='.'){
                 memset(vis,0,sizeof(vis));
-                cnt++;
                 ret+=dfs(getpos(i,j));
             }
         }
     }
-    cout<<cnt-ret;
+    cout<<tot-ret;
     return 0;
 }

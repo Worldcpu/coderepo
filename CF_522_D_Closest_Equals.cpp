@@ -1,38 +1,61 @@
 #include<bits/stdc++.h>
+#define pir pair<int,int>
 using namespace std;
-constexpr int MN=1e6+15;
+constexpr int MN=5e5+15,INF=1e9+7;
 struct Query{
-    int x,op,id;
+    int l,r,id;
 };
-int n,m,a[MN],pre[MN],lst[MN],ans[MN];
-vector<Query> q[MN];
+int n,m,qtot,btot,ans[MN],a[MN],b[MN],pre[MN],lst[MN];
+vector<Query> q;
 
-struct BIT{
-    int t[MN];
+struct Segment{
+#define ls p<<1
+#define rs p<<1|1
+    struct{
+        int l,r,val;
+    }t[MN<<2];
 
-    int lowbit(int x){
-        return x&-x;
+    void pushup(int p){
+        t[p].val=min(t[ls].val,t[rs].val);
     }
 
-    void update(int x,int k){
-        x++;
-        while(x<MN){
-            t[x]+=k;
-            x+=lowbit(x);
+    void build(int p,int l,int r){
+        t[p].l=l;
+        t[p].r=r;
+        if(l==r){
+            t[p].val=INF;
+            return;
         }
+        int mid=(l+r)>>1;
+        build(ls,l,mid);
+        build(rs,mid+1,r);
+        pushup(p);
     }
 
-    int query(int x){
-        x++;
-        int ret=0;
-        while(x){
-            ret+=t[x];
-            x-=lowbit(x);
+    void update(int p,int pos,int k){
+        if(t[p].l==t[p].r){
+            t[p].val=min(t[p].val,k);
+            return;
         }
+        int mid=(t[p].l+t[p].r)>>1;
+        if(mid>=pos) update(ls,pos,k);
+        else update(rs,pos,k);
+        pushup(p);
+    }
+
+    int query(int p,int fl,int fr){
+        if(t[p].l>=fl&&t[p].r<=fr){
+            return t[p].val;
+        }
+        int mid=(t[p].l+t[p].r)>>1,ret=INF;
+        if(mid>=fl) ret=min(ret,query(ls,fl,fr));
+        if(mid<fr) ret=min(ret,query(rs,fl,fr));
         return ret;
     }
 
-}bit;
+#undef ls
+#undef rs
+}sg;
 
 namespace ly
 {
@@ -84,32 +107,43 @@ namespace ly
     }using namespace IO::usr;
 }using namespace ly::IO::usr;
 
+bool cmp(Query x,Query y){
+    return x.r<y.r;
+}
 
 int main(){
-    read(n);
+    read(n,m);
     for(int i=1;i<=n;i++){
         read(a[i]);
+        b[i]=a[i];
     }
+    sort(b+1,b+1+n);
+    btot=unique(b+1,b+1+n)-b-1;
     for(int i=1;i<=n;i++){
+        a[i]=lower_bound(b+1,b+1+btot,a[i])-b;
         pre[i]=lst[a[i]];
         lst[a[i]]=i;
-        cerr<<pre[i]<<" ";
     }
-    read(m);
+    sg.build(1,1,n);
     for(int i=1;i<=m;i++){
         int l,r;
-        read(l),read(r);
-        q[l-1].push_back({l-1,-1,i});
-        q[r].push_back({l-1,1,i});
+        read(l,r);
+        q.push_back({l,r,i});
     }
-    for(int i=1;i<=n;i++){
-        bit.update(pre[i],1);
-        for(auto v:q[i]){
-            ans[v.id]+=v.op*bit.query(v.x);
+    sort(q.begin(),q.end(),cmp);
+    int now=1;
+    for(auto p:q){
+        int l=p.l,r=p.r;
+        while(now<=r){
+            if(!pre[now]){
+                now++;
+                continue;
+            }
+            sg.update(1,pre[now],now-pre[now]);
+            now++;
         }
+        ans[p.id]=sg.query(1,l,r);
     }
-    for(int i=1;i<=m;i++){
-        put(ans[i]);
-    }
+    for(int i=1;i<=m;i++) put((ans[i]==INF?-1:ans[i]));
     return 0;
 }

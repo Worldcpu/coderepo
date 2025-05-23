@@ -1,38 +1,93 @@
 #include<bits/stdc++.h>
+#define pir pair<int,int>
 using namespace std;
-constexpr int MN=1e6+15;
+constexpr int MN=1e5+15,INF=1e9;
+struct Line{
+    int l,r;
+}ln[MN];
 struct Query{
-    int x,op,id;
+    int x,y,id;
 };
-int n,m,a[MN],pre[MN],lst[MN],ans[MN];
-vector<Query> q[MN];
+int n,m,q,ans[MN],lnl[MN];
+vector<pir> qry[MN];
 
-struct BIT{
-    int t[MN];
+struct SegmentBeat{
+#define ls p<<1
+#define rs p<<1|1
 
-    int lowbit(int x){
-        return x&-x;
-    }
+    struct{
+        int l,r,mx,se,tagp,tagk;  
+    }t[MN<<2];
 
-    void update(int x,int k){
-        x++;
-        while(x<MN){
-            t[x]+=k;
-            x+=lowbit(x);
+    void pushup(int p){
+        t[p].mx=max(t[ls].mx,t[rs].mx);
+        if(t[ls].mx==t[rs].mx){
+            t[p].se=max(t[ls].se,t[rs].se);
+        }
+        else if(t[ls].mx>t[rs].mx){
+            t[p].se=max(t[ls].se,t[rs].mx);
+        }else{
+            t[p].se=max(t[ls].mx,t[rs].se);
         }
     }
 
-    int query(int x){
-        x++;
-        int ret=0;
-        while(x){
-            ret+=t[x];
-            x-=lowbit(x);
+    void doit(int p,int pos,int k){
+        if(t[p].mx>=pos){
+            t[p].mx=k;
+            if(!t[p].tagp) t[p].tagp=pos;
+            t[p].tagk=k;
         }
-        return ret;
     }
 
-}bit;
+    void pushdown(int p){
+        if(t[p].tagp){
+            doit(ls,t[p].tagp,t[p].tagk);
+            doit(rs,t[p].tagp,t[p].tagk);
+            t[p].tagp=t[p].tagk=0;
+        }
+    }
+
+    void build(int p,int l,int r){
+        t[p].l=l;
+        t[p].r=r;
+        if(l==r){
+            t[p].mx=l;
+            t[p].se=-INF;
+            return;
+        }
+        int mid=(l+r)>>1;
+        build(ls,l,mid);
+        build(rs,mid+1,r);
+        pushup(p);
+    }
+
+
+    void modify(int p,int fl,int fr,int pos,int v){
+        if(t[p].mx<pos||t[p].l>fr||t[p].r<fl) return;
+        if(t[p].l>=fl&&t[p].r<=fr&&t[p].se<pos){
+            doit(p,pos,v);
+            return;
+        }
+        pushdown(p);
+        int mid=(t[p].l+t[p].r)>>1;
+        modify(ls,fl,fr,pos,v);
+        modify(rs,fl,fr,pos,v);
+        pushup(p);
+    }
+
+    int query(int p,int pos){
+        if(t[p].l==t[p].r){
+            return t[p].mx;
+        }
+        pushdown(p);
+        int mid=(t[p].l+t[p].r)>>1;
+        if(mid>=pos) return query(ls,pos);
+        else return query(rs,pos);
+    }
+
+#undef ls
+#undef rs
+}sg;
 
 namespace ly
 {
@@ -84,31 +139,30 @@ namespace ly
     }using namespace IO::usr;
 }using namespace ly::IO::usr;
 
+void solve(){
+    for(int i=1;i<=n;i++){
+        if(lnl[i]) sg.modify(1,1,lnl[i],lnl[i],i);
+        for(auto p:qry[i]) ans[p.second]=sg.query(1,p.first);
+    }
+}
 
 int main(){
-    read(n);
-    for(int i=1;i<=n;i++){
-        read(a[i]);
-    }
-    for(int i=1;i<=n;i++){
-        pre[i]=lst[a[i]];
-        lst[a[i]]=i;
-        cerr<<pre[i]<<" ";
-    }
-    read(m);
+    memset(ans,0x3f,sizeof(ans));
+    read(n,m);
+    sg.build(1,1,n);
     for(int i=1;i<=m;i++){
         int l,r;
-        read(l),read(r);
-        q[l-1].push_back({l-1,-1,i});
-        q[r].push_back({l-1,1,i});
+        read(l,r);
+        lnl[r]=l;
     }
-    for(int i=1;i<=n;i++){
-        bit.update(pre[i],1);
-        for(auto v:q[i]){
-            ans[v.id]+=v.op*bit.query(v.x);
-        }
+    read(q);
+    for(int i=1;i<=q;i++){
+        int x,y;
+        read(x,y);
+        qry[y].push_back(pir(x,i));
     }
-    for(int i=1;i<=m;i++){
+    solve();
+    for(int i=1;i<=q;i++){
         put(ans[i]);
     }
     return 0;
