@@ -1,7 +1,11 @@
 #include<bits/stdc++.h>
+#define int long long
 using namespace std;
-constexpr int MN=100,MOD=2009;
-int n,t,tot,idx[MN][10];
+constexpr int MN=150,MOD=45989;
+struct Edge{
+    int u,v;
+}e[MN];
+int n,m,T,s,t,tot;
 
 struct Matrix{
     int mat[MN][MN];
@@ -37,34 +41,34 @@ Matrix ksm(Matrix a,int b){
     return ret;
 }
 
-void initG(){
-    for(int i=1;i<=n;i++){
-        for(int j=1;j<=9;j++){
-            idx[i][j]=++tot;
-        }
+signed main(){
+    cin>>n>>m>>T>>s>>t;
+    s++;
+    t++;
+    e[++tot].u=0;
+    e[tot].v=s;
+    for(int i=1;i<=m;i++){
+        int u,v;
+        cin>>u>>v;
+        u++,v++;
+        e[++tot].u=u;
+        e[tot].v=v;
+        e[++tot].u=v;
+        e[tot].v=u;
     }
-    for(int i=1;i<=n;i++){
-        for(int j=1;j<9;j++){
-            G.mat[idx[i][j]][idx[i][j+1]]=1;
-        }
-    }
-}
-
-int main(){
-    cin>>n>>t;
-    initG();
-    for(int i=1;i<=n;i++){
-        for(int j=1;j<=n;j++){
-            char c;
-            int num;
-            cin>>c;
-            num=c-'0';
-            if(num>0){
-                G.mat[idx[i][num]][idx[j][1]]=1;
+    for(int i=1;i<=tot;i++){
+        for(int j=1;j<=tot;j++){
+            if(i!=j&&i!=(j^1)){
+                if(e[i].v==e[j].u) A.mat[i][j]=1;
             }
         }
     }
-    A=ksm(G,t);
-    cout<<A.mat[1][idx[n][1]]%2009;
-    return 0;
+    Matrix ret=ksm(A,T);
+    int ans=0;
+    for(int i=1;i<=tot;i++){
+        if(e[i].v==t){
+            ans=(ans+ret.mat[1][i])%MOD;
+        }
+    }
+    cout<<ans;
 }
