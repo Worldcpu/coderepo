@@ -1,7 +1,18 @@
 #include<iostream>
 using namespace std;
+
+void dfs(int u){
+    if(u>=200){
+        cout<<"2";
+        return;
+    }
+    cout<<"2^{";
+    dfs(u+1);
+    cout<<"}";
+}
+
 int main(){
-    double a=0.1,b=0.1;
-    cout<<(0.3==3*0.1);
+    freopen("ans.out","w",stdout);
+    dfs(1);
     return 0;
 }
