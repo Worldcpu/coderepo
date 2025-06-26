@@ -1,137 +1,627 @@
-#include<cstdio>
-#include<algorithm>
-#include<map>
-#include<queue>
-using namespace std;const int N=4100;const int M=4100;
-typedef unsigned long long ll;const ll mod=998244353;
-struct data//转移用的矩阵类 
-{
-    int dp[3][3];
-    inline int* operator [](const int& x){return dp[x];} 
-    data()
-    {
-        for(int i=0;i<3;i++)	
-            for(int j=0;j<3;j++)dp[i][j]=-1;
-    }
-    friend bool operator <(data a,data b)
-    {
-        for(int i=0;i<3;i++)
-            for(int j=0;j<3;j++)
-                if(a[i][j]!=b[i][j])return a[i][j]<b[i][j];
-        return false;
-    }
-    friend bool operator !=(data a,data b)
-    {
-        for(int i=0;i<3;i++)
-            for(int j=0;j<3;j++)
-                if(a[i][j]!=b[i][j])return true;return false;
-    }
-    inline void trs(data& c,int del)
-    {
-        for(int i=0;i<3;i++)
-            for(int j=0;j<3;j++)
-                if(dp[i][j]!=-1)
-                    for(int k=0,rem=del-i-j;k<3&&i+j+k<=del;k++,rem--)
-                        c[j][k]=max(c[j][k],min(i+dp[i][j]+rem/3,4));
-    }
-    inline bool ckhu()
-    {
-        for(int i=0;i<3;i++)
-            for(int j=0;j<3;j++)
-                if(dp[i][j]>=4)return true;return false;
-    }
-};
-struct nod//自动机节点 
-{
-    data is_pair[2];int cnt_pair;
-    friend bool operator <(nod a,nod b)
-    {
-        if(a.cnt_pair!=b.cnt_pair)return a.cnt_pair<b.cnt_pair;
-        if(a.is_pair[0]!=b.is_pair[0])return a.is_pair[0]<b.is_pair[0];
-        if(a.is_pair[1]!=b.is_pair[1])return a.is_pair[1]<b.is_pair[1];
-        return false;
-    }
-    inline void clear()
-    {is_pair[0]=data();is_pair[1]=data();cnt_pair=-2333;}
-    inline bool ckhu()
-    {
-        if(cnt_pair>=7){clear();return true;}
-        if(is_pair[1].ckhu()){clear();return true;}
-        return false;
-    }
-    friend nod operator +(nod a,int b)
-    {
-        if(a.cnt_pair==-2333)return a;
-        nod c;
-        if(b>=2)a.is_pair[0].trs(c.is_pair[1],b-2);
-        a.is_pair[0].trs(c.is_pair[0],b);
-        a.is_pair[1].trs(c.is_pair[1],b);
-        c.cnt_pair=a.cnt_pair+(b>=2);
-        c.ckhu();
-        return c;
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <string>
+#include <fstream>
+#include <chrono>
+#include <cstring>
+#include <algorithm>
+#include <numeric>
+#include <iomanip>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <thread>
+#include <random>
+#include <functional>
+// 汇编级高精度计时器
+inline uint64_t rdtsc() {
+    uint32_t lo, hi;
+    __asm__ volatile("rdtsc" : "=a"(lo), "=d"(hi));
+    return ((uint64_t)hi << 32) | lo;
+}
+
+inline uint64_t get_cycles() {
+    return rdtsc();
+}
+
+class Timer {
+private:
+    static double cpu_freq_ghz;
+    static bool freq_detected;
+    
+    static void detect_cpu_frequency() {
+        if (freq_detected) return;
+        
+        auto start_time = std::chrono::high_resolution_clock::now();
+        uint64_t start_cycles = rdtsc();
+        
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        
+        auto end_time = std::chrono::high_resolution_clock::now();
+        uint64_t end_cycles = rdtsc();
+        
+        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
+        double elapsed_ns = duration.count();
+        uint64_t elapsed_cycles = end_cycles - start_cycles;
+        
+        cpu_freq_ghz = (elapsed_cycles / elapsed_ns);
+        freq_detected = true;
+        
+        std::cout << "检测到CPU频率: " << std::fixed << std::setprecision(2) 
+                  << cpu_freq_ghz << " GHz" << std::endl;
     }
     
+public:
+    static double cycles_to_ms(uint64_t cycles) {
+        if (!freq_detected) detect_cpu_frequency();
+        return cycles / (cpu_freq_ghz * 1000000.0);
+    }
 };
-inline nod stat()
-{
-    nod res;res.clear();res.cnt_pair=0;res.is_pair[0][0][0]=0;
-    return res;
-}
-map <nod,int> mrk;int tot;int mp[M][5];queue <nod> q;int ed;
-inline void bfs()//搜索 
-{
-    nod st=stat();
-    q.push(st);mrk[st]=++tot;
-    while(!q.empty())
-    {
-        st=q.front();q.pop();int nu=mrk[st];
-        for(int i=0;i<=4;i++)
-        {
-            nod tw=st+i;
-            if(mrk.count(tw))mp[nu][i]=mrk[tw];
-            else mp[nu][i]=mrk[tw]=++tot,q.push(tw);
+
+double Timer::cpu_freq_ghz = 2.5;
+bool Timer::freq_detected = false;
+
+class DataGenerator {
+public:
+    static void generateTestData(const std::string& filename, int count) {
+        std::ofstream file(filename, std::ios::binary);
+        file << count << "\n";
+        
+        std::random_device rd;
+        uint32_t seed = rd();
+        
+        for (int i = 0; i < count; i++) {
+            seed = seed * 1103515245 + 12345;
+            int val = (int)(seed % 2000000) - 1000000; // 范围: -1000000 到 999999
+            file << val;
+            if (i < count - 1) file << " ";
+            
+            if (i % 100 == 99) file << "\n";
         }
+        if (count % 100 != 0) file << "\n";
+        file.close();
     }
-    st.clear();ed=mrk[st];
-}
-ll fac[N];ll inv[N];ll ifac[N];
-ll dp[2][440][M];ll* p1[440];ll* p2[440];
-ll xs[N];int sum[N];int n;
-inline void pre()
-{
-    fac[0]=1;for(int i=1;i<N;i++)fac[i]=fac[i-1]*i%mod;
-    inv[0]=inv[1]=1;for(int i=2;i<N;i++)inv[i]=(mod-mod/i)*inv[mod%i]%mod;
-    ifac[0]=1;for(int i=1;i<N;i++)ifac[i]=ifac[i-1]*inv[i]%mod;
-}
-inline void calc()//dp使用了滚动数组 
-{
-    int cap=n*4-13;
-    for(int i=0;i<=cap;i++)p1[i]=dp[0][i];
-    for(int i=0;i<=cap;i++)p2[i]=dp[1][i];p1[0][mrk[stat()]]=1;
-    for(int z=1;z<=n;z++)
-    {
-        for(int j=0;j<=4-sum[z];j++)xs[j]=fac[4-sum[z]]*ifac[4-sum[z]-j]%mod*ifac[j]%mod;
-        for(int i=cap;i>=0;i--)
-        {
-            for(int j=1;j<=tot;j++)p2[i][j]=0;
-            for(int j=1;j<=tot;j++)
-                if(p1[i][j]!=0)
-                    for(int tmp=0;tmp<=4-sum[z]&&i+tmp<=cap;tmp++)
-                        (p2[i+tmp][mp[j][tmp+sum[z]]]+=p1[i][j]*xs[tmp])%=mod;
+};
+
+namespace MyFastIO1 {
+    int in() {
+        int k = 0, f = 1;
+        char c = getchar_unlocked();
+        while (c < '0' || c > '9') {
+            if (c == '-') f = -1;
+            c = getchar_unlocked();
         }
-        for(int i=0;i<=cap;i++)swap(p1[i],p2[i]);
+        while (c >= '0' && c <= '9') k = k * 10 + c - '0', c = getchar_unlocked();
+        return k * f;
     }
 }
-int main()
-{
-    bfs();pre();
-    scanf("%d",&n);
-    for(int i=1,w,t;i<=13;i++)scanf("%d%d",&w,&t),sum[w]++;
-    calc();
-    ll ans=0;
-    for(int p=1,q=4*n-14;p<=4*n-13;p++,q--)//计算答案 
-        for(int j=1;j<=tot;j++)
-            if(j!=ed)(ans+=p1[p][j]*fac[p]%mod*fac[q])%=mod;
-    printf("%lld",ans*ifac[4*n-13]%mod+1);
-    return 0;//拜拜程序~ 
+
+class MMapReader {
+public:
+    MMapReader() : is_mapped_(false), addr_(nullptr), current_(nullptr), end_(nullptr), size_(0) {
+        struct stat st;
+        if (fstat(STDIN_FILENO, &st) == -1) {
+            fallbackRead();
+            return;
+        }
+        
+        size_ = st.st_size;
+        if (size_ == 0) {
+            fallbackRead();
+            return;
+        }
+        
+        addr_ = static_cast<char*>(
+            mmap(nullptr, size_, PROT_READ, MAP_PRIVATE, STDIN_FILENO, 0)
+        );
+        
+        if (addr_ == MAP_FAILED) {
+            fallbackRead();
+            return;
+        }
+        
+        is_mapped_ = true;
+        current_ = addr_;
+        end_ = addr_ + size_;
+    }
+
+    ~MMapReader() {
+        if (is_mapped_ && addr_) {
+            munmap(addr_, size_);
+        }
+    }
+
+    int get() {
+        if (is_mapped_) {
+            if (current_ < end_) {
+                return static_cast<unsigned char>(*current_++);
+            }
+            return EOF;
+        } else {
+            if (buffer_pos_ < buffer_data_.size()) {
+                return static_cast<unsigned char>(buffer_data_[buffer_pos_++]);
+            }
+            return EOF;
+        }
+    }
+
+    int readInt() {
+        int x = 0, f = 1;
+        char ch = get();
+        
+        while (ch != EOF && (ch < '0' || ch > '9')) {
+            if (ch == '-') f = -1;
+            ch = get();
+        }
+        
+        while (ch != EOF && ch >= '0' && ch <= '9') {
+            x = x * 10 + ch - '0';
+            ch = get();
+        }
+        
+        return x * f;
+    }
+
+private:
+    bool is_mapped_;
+    char* addr_;
+    char* current_;
+    char* end_;
+    size_t size_;
+    
+    std::vector<char> buffer_data_;
+    size_t buffer_pos_ = 0;
+    
+    void fallbackRead() {
+        char ch;
+        while ((ch = getchar()) != EOF) {
+            buffer_data_.push_back(ch);
+        }
+        buffer_pos_ = 0;
+        is_mapped_ = false;
+    }
+};
+
+namespace StandardFastIO {
+    class FastReader {
+    private:
+        static const int BUFFER_SIZE = 1 << 21; 
+        char buffer[BUFFER_SIZE];
+        char* ptr;
+        char* end_ptr;
+        FILE* file;
+        bool eof_reached;
+        
+        void loadBuffer() {
+            if (eof_reached) return;
+            
+            size_t bytes_read = fread(buffer, 1, BUFFER_SIZE, file);
+            if (bytes_read == 0) {
+                eof_reached = true;
+                ptr = end_ptr = buffer;
+                return;
+            }
+            
+            ptr = buffer;
+            end_ptr = buffer + bytes_read;
+        }
+        
+        inline char getChar() {
+            if (ptr >= end_ptr) {
+                if (eof_reached) return EOF;
+                loadBuffer();
+                if (ptr >= end_ptr) return EOF;
+            }
+            return *ptr++;
+        }
+        
+    public:
+        FastReader() : ptr(nullptr), end_ptr(nullptr), file(stdin), eof_reached(false) {
+            loadBuffer();
+        }
+        
+        FastReader(FILE* f) : ptr(nullptr), end_ptr(nullptr), file(f), eof_reached(false) {
+            loadBuffer();
+        }
+        
+        int readInt() {
+            int x = 0, f = 1;
+            char ch = getChar();
+            
+            // 跳过非数字字符
+            while (ch != EOF && (ch < '0' || ch > '9')) {
+                if (ch == '-') f = -1;
+                ch = getChar();
+            }
+            
+            // 读取数字
+            while (ch != EOF && ch >= '0' && ch <= '9') {
+                x = x * 10 + (ch - '0');
+                ch = getChar();
+            }
+            
+            return x * f;
+        }
+        
+        void reset() {
+            ptr = end_ptr = buffer;
+            eof_reached = false;
+            rewind(file);
+            loadBuffer();
+        }
+    };
+}
+
+class Benchmark {
+private:
+    std::vector<int> expected_data;
+    int dataSize;
+    const int NUM_RUNS = 10;
+    
+public:
+    void prepareData(int size) {
+        dataSize = size;
+        std::cout << "正在生成 " << size << " 个测试整数..." << std::flush;
+        DataGenerator::generateTestData("test_data.txt", size);
+        std::cout << " 完成。" << std::endl;
+        
+        std::ifstream file("test_data.txt");
+        int n;
+        file >> n;
+        expected_data.resize(n);
+        for (int i = 0; i < n; i++) {
+            file >> expected_data[i];
+        }
+        file.close();
+        std::cout << "已加载预期结果用于验证。" << std::endl;
+    }
+    
+    bool verifyResults(const std::vector<int>& results, const std::string& method) {
+        if (results.size() != expected_data.size()) {
+            std::cerr << method << ": 大小不匹配，预期 " << expected_data.size() 
+                      << "，实际 " << results.size() << std::endl;
+            return false;
+        }
+        
+        // 验证前1000个和后1000个元素
+        for (int i = 0; i < std::min(1000, (int)expected_data.size()); i++) {
+            if (results[i] != expected_data[i]) {
+                std::cerr << method << ": 第 " << i << " 个值不匹配，预期 " 
+                          << expected_data[i] << "，实际 " << results[i] << std::endl;
+                return false;
+            }
+        }
+        
+        int start_check = std::max(1000, (int)expected_data.size() - 1000);
+        for (int i = start_check; i < (int)expected_data.size(); i++) {
+            if (results[i] != expected_data[i]) {
+                std::cerr << method << ": 第 " << i << " 个值不匹配，预期 " 
+                          << expected_data[i] << "，实际 " << results[i] << std::endl;
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // 为避免缓存影响，添加测试顺序随机化
+    std::vector<int> getRandomizedTestOrder() {
+        std::vector<int> order = {0, 1, 2, 3, 4, 5}; // 6种测试方法
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(order.begin(), order.end(), g);
+        return order;
+    }
+    
+    // 测试优化cin (sync_with_stdio(0) + cin.tie(0))
+    double benchmarkOptimizedCin() {
+        std::vector<double> times;
+        std::cout << "测试优化cin (sync关闭+tie关闭)..." << std::flush;
+        
+        for (int run = 0; run < NUM_RUNS; run++) {
+            if (freopen("test_data.txt", "r", stdin) == nullptr) {
+                std::cerr << "无法打开测试文件" << std::endl;
+                return -1;
+            }
+            std::ios_base::sync_with_stdio(0);
+            std::cin.tie(0);
+            
+            std::vector<int> results;
+            uint64_t start = get_cycles();
+            
+            int n;
+            std::cin >> n;
+            results.resize(n);
+            for (int i = 0; i < n; i++) {
+                std::cin >> results[i];
+            }
+            
+            uint64_t end = get_cycles();
+            times.push_back(Timer::cycles_to_ms(end - start));
+            
+            if (run == 0 && !verifyResults(results, "优化cin")) {
+                std::cerr << "优化cin: 验证失败！" << std::endl;
+                return -1;
+            }
+            std::cout << "." << std::flush;
+        }
+        
+        double avg = std::accumulate(times.begin(), times.end(), 0.0) / NUM_RUNS;
+        std::cout << " 完成。" << std::endl;
+        return avg;
+    }
+    
+    // 测试普通cin
+    double benchmarkNormalCin() {
+        std::vector<double> times;
+        std::cout << "测试普通cin..." << std::flush;
+        
+        for (int run = 0; run < NUM_RUNS; run++) {
+            if (freopen("test_data.txt", "r", stdin) == nullptr) {
+                std::cerr << "无法打开测试文件" << std::endl;
+                return -1;
+            }
+            std::ios_base::sync_with_stdio(true);
+            std::cin.tie(&std::cout);
+            
+            std::vector<int> results;
+            uint64_t start = get_cycles();
+            
+            int n;
+            std::cin >> n;
+            results.resize(n);
+            for (int i = 0; i < n; i++) {
+                std::cin >> results[i];
+            }
+            
+            uint64_t end = get_cycles();
+            times.push_back(Timer::cycles_to_ms(end - start));
+            
+            if (run == 0 && !verifyResults(results, "普通cin")) {
+                std::cerr << "普通cin: 验证失败！" << std::endl;
+                return -1;
+            }
+            std::cout << "." << std::flush;
+        }
+        
+        double avg = std::accumulate(times.begin(), times.end(), 0.0) / NUM_RUNS;
+        std::cout << " 完成。" << std::endl;
+        return avg;
+    }
+    
+    // 测试scanf
+    double benchmarkScanf() {
+        std::vector<double> times;
+        std::cout << "测试scanf..." << std::flush;
+        
+        for (int run = 0; run < NUM_RUNS; run++) {
+            if (freopen("test_data.txt", "r", stdin) == nullptr) {
+                std::cerr << "无法打开测试文件" << std::endl;
+                return -1;
+            }
+            
+            std::vector<int> results;
+            uint64_t start = get_cycles();
+            
+            int n;
+            scanf("%d", &n);
+            results.resize(n);
+            for (int i = 0; i < n; i++) {
+                scanf("%d", &results[i]);
+            }
+            
+            uint64_t end = get_cycles();
+            times.push_back(Timer::cycles_to_ms(end - start));
+            
+            if (run == 0 && !verifyResults(results, "scanf")) {
+                std::cerr << "scanf: 验证失败！" << std::endl;
+                return -1;
+            }
+            std::cout << "." << std::flush;
+        }
+        
+        double avg = std::accumulate(times.begin(), times.end(), 0.0) / NUM_RUNS;
+        std::cout << " 完成。" << std::endl;
+        return avg;
+    }
+    
+    double benchmarkStandardFastIO() {
+        std::vector<double> times;
+        std::cout << "测试标准快读 (fread)..." << std::flush;
+        
+        for (int run = 0; run < NUM_RUNS; run++) {
+            FILE* file = fopen("test_data.txt", "r");
+            if (!file) {
+                std::cerr << "无法打开测试文件" << std::endl;
+                return -1;
+            }
+            
+            std::vector<int> results;
+            uint64_t start = get_cycles();
+            
+            StandardFastIO::FastReader reader(file);
+            int n = reader.readInt();
+            results.resize(n);
+            for (int i = 0; i < n; i++) {
+                results[i] = reader.readInt();
+            }
+            
+            uint64_t end = get_cycles();
+            times.push_back(Timer::cycles_to_ms(end - start));
+            
+            fclose(file);
+            
+            if (run == 0 && !verifyResults(results, "标准快读")) {
+                std::cerr << "标准快读: 验证失败！" << std::endl;
+                return -1;
+            }
+            std::cout << "." << std::flush;
+        }
+        
+        double avg = std::accumulate(times.begin(), times.end(), 0.0) / NUM_RUNS;
+        std::cout << " 完成。" << std::endl;
+        return avg;
+    }
+    
+    double benchmarkMyFastIO1() {
+        std::vector<double> times;
+        std::cout << "测试 (getchar_unlocked)..." << std::flush;
+        
+        for (int run = 0; run < NUM_RUNS; run++) {
+            if (freopen("test_data.txt", "r", stdin) == nullptr) {
+                std::cerr << "无法打开测试文件" << std::endl;
+                return -1;
+            }
+            
+            std::vector<int> results;
+            uint64_t start = get_cycles();
+            
+            int n = MyFastIO1::in();
+            results.resize(n);
+            for (int i = 0; i < n; i++) {
+                results[i] = MyFastIO1::in();
+            }
+            
+            uint64_t end = get_cycles();
+            times.push_back(Timer::cycles_to_ms(end - start));
+            
+            if (run == 0 && !verifyResults(results, "快读1")) {
+                std::cerr << "快读1: 验证失败！" << std::endl;
+                return -1;
+            }
+            std::cout << "." << std::flush;
+        }
+        
+        double avg = std::accumulate(times.begin(), times.end(), 0.0) / NUM_RUNS;
+        std::cout << " 完成。" << std::endl;
+        return avg;
+    }
+    
+    double benchmarkMyFastIO2() {
+        std::vector<double> times;
+        std::cout << "测试 (MMap)..." << std::flush;
+        
+        for (int run = 0; run < NUM_RUNS; run++) {
+            if (freopen("test_data.txt", "r", stdin) == nullptr) {
+                std::cerr << "无法打开测试文件" << std::endl;
+                return -1;
+            }
+            
+            std::vector<int> results;
+            uint64_t start = get_cycles();
+            
+            MMapReader reader;
+            int n = reader.readInt();
+            results.resize(n);
+            for (int i = 0; i < n; i++) {
+                results[i] = reader.readInt();
+            }
+            
+            uint64_t end = get_cycles();
+            times.push_back(Timer::cycles_to_ms(end - start));
+            
+            if (run == 0 && !verifyResults(results, "快读2")) {
+                std::cerr << "快读2: 验证失败！" << std::endl;
+                return -1;
+            }
+            std::cout << "." << std::flush;
+        }
+        
+        double avg = std::accumulate(times.begin(), times.end(), 0.0) / NUM_RUNS;
+        std::cout << " 完成。" << std::endl;
+        return avg;
+    }
+    
+    std::vector<std::pair<std::string, double>> runAllBenchmarks() {
+        std::vector<std::pair<std::string, double>> results;
+        
+        struct TestCase {
+            std::string name;
+            std::function<double()> func;
+        };
+        
+        std::vector<TestCase> tests = {
+            {"优化cin (sync关闭+tie关闭)", [this]() { return benchmarkOptimizedCin(); }},
+            {"普通cin", [this]() { return benchmarkNormalCin(); }},
+            {"scanf", [this]() { return benchmarkScanf(); }},
+            {"标准快读 (修复版fread)", [this]() { return benchmarkStandardFastIO(); }},
+            {"快读1 (getchar_unlocked)", [this]() { return benchmarkMyFastIO1(); }},
+            {"快读2 (MMap)", [this]() { return benchmarkMyFastIO2(); }}
+        };
+        
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(tests.begin(), tests.end(), g);
+        
+        for (auto& test : tests) {
+            double time = test.func();
+            if (time > 0) {
+                results.push_back({test.name, time});
+            }
+        }
+        
+        return results;
+    }
+};
+
+int main() {
+    std::cout << "编译参数: g++ -O2 -static -std=c++20" << std::endl;
+    std::cout << "测试规模: 10^7 个整数 (10,000,000)" << std::endl;
+    std::cout << "每种方法运行次数: 10 次 (取平均值)" << std::endl;
+    std::cout << "计时器: 汇编RDTSC + 自动CPU频率检测" << std::endl;
+    std::cout << "缓存优化: 随机测试顺序" << std::endl;
+    std::cout << std::endl;
+    
+    const int TEST_SIZE = 10000000; // 1e7
+    
+    Benchmark bench;
+    bench.prepareData(TEST_SIZE);
+    
+    std::cout << std::endl;
+    std::cout << "开始基准测试 (每种方法运行10次，随机顺序):" << std::endl;
+    std::cout << "======================================" << std::endl;
+    
+    auto results = bench.runAllBenchmarks();
+    
+    // 按性能排序（最快的在前）
+    std::sort(results.begin(), results.end(), 
+              [](const auto& a, const auto& b) { return a.second < b.second; });
+    
+    std::cout << std::endl;
+    std::cout << "=== 最终结果 (10次运行的平均值) ===" << std::endl;
+    std::cout << "排名 | 方法                          | 平均时间 (ms) | 相对最慢的加速比" << std::endl;
+    std::cout << "-----|-------------------------------|---------------|------------------" << std::endl;
+    
+    double slowest_time = results.empty() ? 1.0 : results.back().second;
+    
+    for (size_t i = 0; i < results.size(); i++) {
+        double speedup = slowest_time / results[i].second;
+        printf("%4zu | %-29s | %13.3f | %16.2fx\n", 
+               i + 1, results[i].first.c_str(), results[i].second, speedup);
+    }
+    
+    std::cout << std::endl;
+    std::cout << "=== 性能分析 ===" << std::endl;
+    if (!results.empty()) {
+        double fastest = results[0].second;
+        double slowest = results.back().second;
+        printf("最快方法: %s (%.3f ms)\n", results[0].first.c_str(), fastest);
+        printf("最慢方法: %s (%.3f ms)\n", results.back().first.c_str(), slowest);
+        printf("性能差距: %.2fx\n", slowest / fastest);
+        printf("数据吞吐量 (最快方法): %.2f MB/s\n", 
+               (TEST_SIZE * 4.0 / 1024.0 / 1024.0) / (fastest / 1000.0));
+        
+        std::cout << std::endl;
+        std::cout << "=== 详细分析 ===" << std::endl;
+        for (size_t i = 0; i < results.size(); i++) {
+            double throughput = (TEST_SIZE * 4.0 / 1024.0 / 1024.0) / (results[i].second / 1000.0);
+            printf("%s: %.3f ms, %.2f MB/s\n", 
+                   results[i].first.c_str(), results[i].second, throughput);
+        }
+    }
+    
+    std::cout << std::endl;
+    std::cout << "测试成功完成！" << std::endl;
+    
+    return 0;
 }
