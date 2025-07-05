@@ -1,95 +1,109 @@
 #include<bits/stdc++.h>
+#define int long long
 using namespace std;
 constexpr int MN=1e6+15;
-int cf[MN],K;
+int cf[MN],n,ans,k,maxx;
 string s;
 
-namespace SA{
-    int len,sa[MN],rk[MN],ork[MN],buc[MN],id[MN],ht[MN],st[30][MN];
+struct SAM{
+    int nxt[MN][26],fa[MN],siz[MN],len[MN],cnt[MN],cnt_init[MN],tot,lst;
+    vector<int> adj[MN];
 
-    void getsa(string s){
-        int m=1<<7,p=0;
-        len=s.length();
-        s=" "+s;
-        memset(rk,0,sizeof(rk));
-        memset(ht,0,sizeof(ht));
-        memset(sa,0,sizeof(sa));
-        memset(ork,0,sizeof(ork));
-        memset(buc,0,sizeof(buc));
-        for(int i=1;i<=len;i++) buc[rk[i]=s[i]]++;
-        for(int i=1;i<=m;i++) buc[i]+=buc[i-1];
-        for(int i=len;i>=1;i--) sa[buc[rk[i]]--]=i;
-        for(int w=1;;m=p,p=0,w<<=1){
-            for(int i=len-w+1;i<=len;i++) id[++p]=i;
-            for(int i=1;i<=len;i++) if(sa[i]>w) id[++p]=sa[i]-w;
-            memset(buc,0,(m+1)<<2);
-            memcpy(ork,rk,(len+1)<<2);
-            p=0;
-            for(int i=1;i<=len;i++) buc[rk[i]]++;
-            for(int i=1;i<=m;i++) buc[i]+=buc[i-1];
-            for(int i=len;i>=1;i--) sa[buc[rk[id[i]]]--]=id[i];
-            for(int i=1;i<=len;i++) rk[sa[i]]=ork[sa[i - 1]] == ork[sa[i]] && ork[sa[i - 1] + w] == ork[sa[i] + w] ? p : ++p; 
-            if(p==len) break;
-        }
-        ht[len+1]=0;
-        for(int i=1,k=0;i<=len;i++){
-            if(k) k--;
-            while(s[i+k]==s[sa[rk[i]-1]+k]) k++;
-            ht[rk[i]]=st[0][rk[i]]=k;
-        }
+    void init(){
+        for(int i=0;i<=tot;i++) adj[i].clear();
+        tot=lst=0;
+        fa[0]=-1;
+        len[0]=0;
+        memset(nxt[0],0,sizeof(nxt[0]));
+        cnt_init[0]=0;
     }
 
-    void initst(){
-        for(int i=1;i<=__lg(len);i++){
-            for(int j=1;j+(1<<i)-1<=len;j++){
-                st[i][j]=min(st[i-1][j],st[i-1][j+(1<<(i-1))]);
+    void extend(int c){
+        int cur=++tot;
+        len[cur]=len[lst]+1;
+        cnt_init[cur]=1;
+        memset(nxt[cur],0,sizeof(nxt[cur]));
+        int p=lst;
+        while(p!=-1&&!nxt[p][c]){
+            nxt[p][c]=cur;
+            p=fa[p];
+        }
+        if(p==-1){
+            fa[cur]=0;
+        }else{
+            int q=nxt[p][c];
+            if(len[q]==len[p]+1){
+                fa[cur]=q;
+            }else{
+                int nq=++tot;
+                len[nq]=len[p]+1;
+                memcpy(nxt[nq],nxt[q],sizeof(nxt[q]));
+                fa[nq]=fa[q];
+                cnt_init[nq]=0;
+                while(p!=-1&&nxt[p][c]==q){
+                    nxt[p][c]=nq;
+                    p=fa[p];
+                }
+                fa[q]=fa[cur]=nq;
             }
         }
+        lst=cur;
     }
 
-    int lcp(int i,int j){
-        if((i=rk[i])>(j=rk[j])) swap(i,j);
-        int d=__lg(j-(i++));
-        return min(st[d][i],st[d][j-(1<<d)+1]);
+    void buildt(){
+        for(int i=1;i<=tot;i++){
+            adj[fa[i]].push_back(i);
+        }
     }
 
-}using namespace SA;
+void getsiz(int u) {
+    siz[u] = cnt_init[u]; // 初始大小为 cnt_init[u]
+    for (auto v : adj[u]) {
+        getsiz(v);
+        siz[u] += siz[v];
+    }
+    if (siz[u] == k) {
+        int l = (fa[u] == -1) ? 1 : len[fa[u]] + 1;
+        int r = len[u];
+        cf[l]++;
+        cf[r + 1]--;
+    }
+}
+
+}sam;
+
+void init(){
+    sam.init();
+    memset(cf,0,sizeof(cf));
+    maxx=ans=-1;
+}
 
 void solve(){
-    cin>>s>>K;
-    memset(cf,0,sizeof(cf));
-    getsa(s);
-    initst();
-    for(int i=1;i<=len-K+1;i++){
-        int l=i,r=i+K-1,L,R;
-        if(l+1>r) R=len-sa[r]+1;
-        else{
-            int ld=l+1,rd=r;
-            int d=__lg(rd-ld+1);
-            R=min(st[d][ld],st[d][rd-(1<<d)+1]);
-        }
-        L=max(ht[l],ht[r+1])+1;
-        if(L<=R){
-            cf[L]++;
-            cf[R+1]--;
-        }
+    init();
+    cin>>s>>k;
+    n=s.length();
+    s=" "+s;
+    for(int i=1;i<=n;i++){
+        sam.extend(s[i]-'a');
     }
-    int ans=-1,maxx=1;
-    for(int i=1;i<=len;i++){
+    sam.buildt();
+    sam.getsiz(0);
+    for(int i=1;i<=n;i++){
         cf[i]+=cf[i-1];
         if(cf[i]>=maxx){
             ans=i;
             maxx=cf[i];
         }
     }
-    cout<<ans<<'\n';
+    cout<<(maxx>0?ans:-1)<<'\n';
 }
 
-int main(){
+signed main(){
     int T;
     cin>>T;
     while(T--){
         solve();
     }
+
     return 0;
 }
