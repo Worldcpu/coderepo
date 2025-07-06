@@ -1,7 +1,7 @@
 #include<bits/stdc++.h>
 #define ll long long
 using namespace std;
-constexpr int MN=1e6+15;
+constexpr int MN=2e6+15;
 int n;
 
 struct gySAM{
@@ -18,38 +18,49 @@ struct gySAM{
         cnt_init[0]=0;
     }
 
-    int extend(int c,int lst){
-        if(nxt[lst][c]&&len[nxt[lst][c]]==len[lst]+1) return nxt[lst][c];
+    gySAM(){
+        init();
+    }
+
+    int newnode(int lst){
         int cur=++tot;
-        len[cur]=len[lst]+1;
         cnt_init[cur]=1;
         memset(nxt[cur],0,sizeof(nxt[cur]));
-        int p=lst;
-        while(p!=-1&&!nxt[p][c]){
-            nxt[p][c]=cur;
-            p=fa[p];
-        }
-        bool flag=0;
-        if(p==-1) fa[cur]=0;
-        else{
-            int q=nxt[p][c];
-            if(len[q]==len[p]+1){
-                fa[cur]=q;
-                return cur;
-            }
+        return cur;
+    }
+
+    int clone(int from){
+        int cur=++tot;
+        fa[cur]=fa[from];
+        cnt_init[cur]=0;
+        memcpy(nxt[cur],nxt[from],sizeof(nxt[from]));
+        return cur;
+    }
+
+    int extend(int c,int lst){
+        if(nxt[lst][c]){
+            int p=nxt[lst][c];
+            if(len[p]==len[lst]+1) return p;
             else{
-                if(p==lst) flag=1,cur=MN-1,tot--;
-                int nq=++tot;
-                len[nq]=len[p]+1;
-                memcpy(nxt[nq],nxt[q],sizeof(nxt[q]));
-                fa[nq]=fa[q];
-                cnt_init[nq]=0;
-                while(p!=-1&&nxt[p][c]==q){
-                    nxt[p][c]=nq;
-                    p=fa[p];
-                }
-                fa[q]=fa[cur]=nq;
-                return flag?nq:cur;
+                int q=clone(p);
+                len[q]=len[lst]+1;
+                while(lst!=-1&&nxt[lst][c]==p) nxt[lst][c]=q,lst=fa[lst];
+                fa[p]=q;
+                return q;
+            }
+        }
+        int cur=newnode(lst);
+        len[cur]=len[lst]+1;
+        while(lst!=-1&&!nxt[lst][c]) nxt[lst][c]=cur,lst=fa[lst];
+        if(lst==-1) fa[cur]=0;
+        else{
+            int p=nxt[lst][c];
+            if(len[p]==len[lst]+1) fa[cur]=p;
+            else{
+                int q=clone(p);
+                len[q]=len[lst]+1;
+                while(lst!=-1&&nxt[lst][c]==p) nxt[lst][c]=q,lst=fa[lst];
+                fa[p]=fa[cur]=q;
             }
         }
         return cur;

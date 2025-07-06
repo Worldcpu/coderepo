@@ -20,32 +20,34 @@ struct SAM{
         cnt_init[0]=0;
     }
 
-    void extend(int c){
+    int newnode(){
         int cur=++tot;
-        len[cur]=len[lst]+1;
         cnt_init[cur]=1;
         memset(nxt[cur],0,sizeof(nxt[cur]));
+        return cur;
+    }
+
+    int clone(int from){
+        int cur=++tot;
+        fa[cur]=fa[from];
+        cnt_init[cur]=0;
+        memcpy(nxt[cur],nxt[from],sizeof(nxt[from]));
+        return cur;
+    }
+
+    void extend(int c){
+        int cur=newnode();
+        len[cur]=len[lst]+1;
         int p=lst;
-        while(p!=-1&&!nxt[p][c]){
-            nxt[p][c]=cur;
-            p=fa[p];
-        }
+        while(p!=-1&&!nxt[p][c]) nxt[p][c]=cur,p=fa[p];
         if(p==-1) fa[cur]=0;
         else{
             int q=nxt[p][c];
-            if(len[q]==len[p]+1){
-                fa[cur]=q;
-            }
+            if(len[q]==len[p]+1) fa[cur]=q;
             else{
-                int nq=++tot;
+                int nq=clone(q);
                 len[nq]=len[p]+1;
-                memcpy(nxt[nq],nxt[q],sizeof(nxt[q]));
-                fa[nq]=fa[q];
-                cnt_init[nq]=0;
-                while(p!=-1&&nxt[p][c]==q){
-                    nxt[p][c]=nq;
-                    p=fa[p];
-                }
+                while(p!=-1&&nxt[p][c]==q) nxt[p][c]=nq,p=fa[p];
                 fa[q]=fa[cur]=nq;
             }
         }
