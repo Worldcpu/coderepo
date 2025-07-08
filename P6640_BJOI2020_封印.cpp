@@ -1,112 +1,130 @@
 #include<bits/stdc++.h>
+#define ll long long
 using namespace std;
-constexpr int MN=1e6+15;
-int q,n,m;
-string s,t,st;
+constexpr int MN=3e6+15;
+int n,m,q,st[MN][30],L[MN];
+string s,t;
 
-namespace SA{
-    int len,sa[MN],x[MN],y[MN],rk[MN],c[MN],ht[MN],ST[30][MN];
+struct SAM{
+    int nxt[MN][26],fa[MN],len[MN],cnt[MN],tot,lst;
+    int cnt_init[MN];
+    vector<int> adj[MN];
 
-    void getsa(string s){
-        int m=400000;
-        len=s.length();
-        s=" "+s;
-        for(int i=1;i<=len;i++){
-            x[i]=s[i];
-            c[x[i]]++;
-        }
-        for(int i=2;i<=m;i++) c[i]+=c[i-1];
-        for(int i=len;i>=1;i--) sa[c[x[i]]--]=i;
-        for(int k=1;k<=len;k<<=1){
-            int num=0;
-            for(int i=len-k+1;i<=len;i++) y[++num]=i;
-            for(int i=1;i<=len;i++){
-                if(sa[i]>k) y[++num]=sa[i]-k;
-            }
-            for(int i=1;i<=m;i++) c[i]=0;
-            for(int i=1;i<=len;i++) c[x[i]]++;
-            for(int i=2;i<=m;i++) c[i]+=c[i-1];
-            for(int i=len;i>=1;i--) sa[c[x[y[i]]]--]=y[i];
-            swap(x,y);
-            num=x[sa[1]]=1;
-            for(int i=2;i<=len;i++){
-                if(y[sa[i]]==y[sa[i-1]]&&y[sa[i]+k]==y[sa[i-1]+k]) x[sa[i]]=num;
-                else x[sa[i]]=++num;
-            }
-            if(num==len) break;
-            m=num;
-        }
-        for(int i=1;i<=len;i++) rk[sa[i]]=i;
-#ifdef SAONE
-        for(int i=1,k=0;i<=len;i++){
-          ht[rk[i]] = max(ht[rk[i - 1]] - 1, 0);
-            while (s[i + ht[rk[i]]] == s[sa[rk[i] - 1] + ht[rk[i]]]) 
-                ht[rk[i]]++;
-        }
-#endif
-#ifndef SAONE
-        for(int i=1,k=0;i<=len;i++){
-            if(rk[i]==1) continue;
-            if(k) k--;
-            int j=sa[rk[i]-1];
-            while(i+k<=len&&j+k<=len&&s[i+k]==s[j+k]) k++;
-            ht[rk[i]]=k;
-        }
-#endif
-        for(int i=1;i<=len;i++) cerr<<ht[i]<<" ";
+    void init(){
+        tot=0;
+        lst=0;
+        fa[0]=-1;
+        len[0]=0;
+        memset(nxt[0],0,sizeof(nxt[0]));
+        cnt_init[0]=0;
     }
 
-    void initst(){
-        int minn=0x3f3f3f3f;
-        for(int i=2;i<=len;i++){
-            minn=min(minn,ht[i]);
-            if(sa[i]>m+1){
-                ST[0][sa[i]-1-m]=minn;
-            }else minn=ht[i+1];
+    int newnode(){
+        int cur=++tot;
+        cnt_init[cur]=1;
+        memset(nxt[cur],0,sizeof(nxt[cur]));
+        return cur;
+    }
+
+    int clone(int from){
+        int cur=++tot;
+        fa[cur]=fa[from];
+        cnt_init[cur]=0;
+        memcpy(nxt[cur],nxt[from],sizeof(nxt[from]));
+        return cur;
+    }
+
+    void extend(int c){
+        int cur=newnode();
+        len[cur]=len[lst]+1;
+        int p=lst;
+        while(p!=-1&&!nxt[p][c]) nxt[p][c]=cur,p=fa[p];
+        if(p==-1) fa[cur]=0;
+        else{
+            int q=nxt[p][c];
+            if(len[q]==len[p]+1) fa[cur]=q;
+            else{
+                int nq=clone(q);
+                len[nq]=len[p]+1;
+                while(p!=-1&&nxt[p][c]==q) nxt[p][c]=nq,p=fa[p];
+                fa[q]=fa[cur]=nq;
+            }
         }
-        minn=0x3f3f3f3f;
-        for(int i=len;i>=1;i--){
-            minn=min(minn,ht[i+1]);
-            if(sa[i]>m+1){
-                ST[0][sa[i]-1-m]=max(ST[0][sa[i]-1-m],minn);
-            }else minn=ht[i];
+        lst=cur;
+    }
+
+    void inittree(){
+        for(int i=0;i<=tot;i++){
+            adj[i].clear();
+            cnt[i]=-1;
         }
-        for(int i=1;i<30;i++){
-            for(int j=1;j+(1<<i-1)<=len;j++){
-                ST[i][j]=max(ST[i-1][j],ST[i-1][j+(1<<i-1)]);
+        for(int i=1;i<=tot;i++){
+            adj[fa[i]].push_back(i);
+        }
+    }
+}sam;
+
+void getL(){
+    int p=0;
+    for(int i=1;i<=n;i++){
+        int k=s[i]-'a';
+        if(sam.nxt[p][k]){
+            p=sam.nxt[p][k];
+            L[i]=L[i-1]+1;
+        }else{
+            while(p!=-1&&!sam.nxt[p][k]){
+                p=sam.fa[p];
+            }
+            if(p==-1){
+                p=0;
+            }else{
+                L[i]=sam.len[p]+1;
+                p=sam.nxt[p][k];
             }
         }
     }
+}
 
-}using namespace SA;
+void inist(){
+    for(int i=1;i<=n;i++) st[i][0]=L[i];
+    for(int j=1;j<=20;j++){
+        for(int i=1;i+(1<<j)-1<=n;i++){
+            st[i][j]=max(st[i][j-1],st[i+(1<<(j-1))][j-1]);
+        }
+    }
+}
 
 int query(int l,int r){
     if(l>r) return 0;
     int lg=__lg(r-l+1);
-    return max(ST[lg][l],ST[lg][r-(1<<lg)+1]);
+    return max(st[l][lg],st[r-(1<<lg)+1][lg]);
 }
 
-int solve(int l,int r){
-    int L=0,R=r-l+2;
-    while(L+1<R){
-        int mid=(L+R)>>1;
-        if(query(l,r-mid+1)>=mid) L=mid;
-        else R=mid;
+int getpos(int l,int r){
+    int len=l,ret=r+1;
+    while(l<=r){
+        int mid=(l+r)>>1;
+        if(mid-L[mid]+1>=len){
+            r=mid-1;
+            ret=mid;
+        }else l=mid+1;
     }
-    return L;
+    return ret;
 }
 
 int main(){
     cin>>s>>t>>q;
     n=s.length(),m=t.length();
-    st=t+'#'+s;
-    cerr<<st<<'\n';
-    getsa(st);
-    initst();
+    s=" "+s,t=" "+t;
+    sam.init();
+    for(int i=1;i<=m;i++) sam.extend(t[i]-'a');
+    getL();
+    inist();
     while(q--){
-        int l,r;
+        int l,r,pos;
         cin>>l>>r;
-        cout<<solve(l,r)<<'\n';
+        pos=getpos(l,r);
+        cout<<max(query(pos,r),pos-l)<<'\n';
     }
     return 0;
 }

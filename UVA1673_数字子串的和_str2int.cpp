@@ -1,20 +1,22 @@
 #include<bits/stdc++.h>
-#define ll long long
+#define int long long
 using namespace std;
-constexpr int MN=2e6+15;
-int n;
+constexpr int MN=1e6+15,MOD=2012;
+int n,f[MN],g[MN];
 
 struct gySAM{
-    int nxt[MN][26],fa[MN],pos[MN],len[MN],tot;
+    int nxt[MN][26],c[MN],id[MN],fa[MN],len[MN],mxl,tot;
     vector<int> adj[MN];
 
     void init(){
         for(int i=0;i<=tot;i++){
             adj[i].clear();
-            fa[i]=pos[i]=len[i]=0;
+            fa[i]=g[i]=f[i]=len[i]=c[i]=id[i]=0;
             memset(nxt[i],0,sizeof(nxt[i]));
         }
         tot=1;
+        mxl=0;
+        g[1]=1;
     }
 
     gySAM(){
@@ -23,12 +25,13 @@ struct gySAM{
 
     int newnode(){
         int cur=++tot;
+        f[cur]=g[cur]=0;
         memset(nxt[cur],0,sizeof(nxt[cur]));
         return cur;
     }
 
     int clone(int from){
-        int cur=++tot;
+        int cur=newnode();
         fa[cur]=fa[from];
         memcpy(nxt[cur],nxt[from],sizeof(nxt[from]));
         return cur;
@@ -59,35 +62,55 @@ struct gySAM{
         return flag?nq:cur;
     }
 
-    void inittree(){
-        for(int i=2;i<=tot;i++){
-            adj[fa[i]].push_back(i);
-        }
-    }
-
     void insert(string s){
         int len=s.length(),lst=1;
         s=" "+s;
+        mxl=max(mxl,len);
         for(int i=1;i<=len;i++){
-            lst=extend(s[i]-'a',lst);
+            lst=extend(s[i]-'0',lst);
         }
     }
 
+    void initc(){
+		for(int i=1; i<=tot; ++i) c[len[i]]++;
+		for(int i=0; i<=mxl; ++i) c[i]=0;
+		for(int i=1; i<=tot; ++i) c[len[i]]++;
+		for(int i=1; i<=mxl; ++i) c[i]+=c[i-1];
+		for(int i=1; i<=tot; ++i) id[c[len[i]]--]=i;    
+    }
+
+    void solve(){
+        for(int i=1;i<=tot;i++){
+            int u=id[i];
+            cerr<<u<<" ";
+            for(int j=0;j<10;j++){
+                if((u==1&&!j)||!nxt[u][j]) continue;
+                (f[nxt[u][j]]+=g[u]*j+f[u]*10)%=MOD;
+                (g[nxt[u][j]]+=g[u])%=MOD;
+            }
+        }
+    }
 }sam;
 
 
-int main(){
-    cin>>n;
+void solve(){
     sam.init();
     for(int i=1;i<=n;i++){
         string s;
         cin>>s;
         sam.insert(s);
     }
-    ll ans=0;
-    for(int i=2;i<=sam.tot;i++){
-        ans+=sam.len[i]-sam.len[sam.fa[i]];
+    sam.initc();
+    sam.solve();
+    int ans=0;
+    for(int i=1;i<=sam.tot;i++) (ans+=f[i])%=MOD;
+    cout<<ans<<'\n';
+}
+
+signed main(){
+    while(cin>>n){
+        solve();
     }
-    cout<<ans<<"\n"<<sam.tot;
+
     return 0;
 }

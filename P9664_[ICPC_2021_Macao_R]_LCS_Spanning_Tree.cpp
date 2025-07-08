@@ -1,23 +1,24 @@
 #include<bits/stdc++.h>
-#define ll long long
+#define int long long
 using namespace std;
-constexpr int MN=2e6+15;
-int n;
+constexpr int MN=2e6+114;
+int n,ans,pre[MN],p[MN],id[MN];
+vector<int> col[MN];
 
-struct gySAM{
-    int nxt[MN][26],fa[MN],pos[MN],len[MN],tot;
+struct SAM{
+    int nxt[MN][26],fa[MN],len[MN],tot;
     vector<int> adj[MN];
 
     void init(){
         for(int i=0;i<=tot;i++){
             adj[i].clear();
-            fa[i]=pos[i]=len[i]=0;
+            fa[i]=len[i]=0;
             memset(nxt[i],0,sizeof(nxt[i]));
         }
         tot=1;
     }
 
-    gySAM(){
+    SAM(){
         init();
     }
 
@@ -65,29 +66,72 @@ struct gySAM{
         }
     }
 
-    void insert(string s){
-        int len=s.length(),lst=1;
-        s=" "+s;
-        for(int i=1;i<=len;i++){
-            lst=extend(s[i]-'a',lst);
+    void insert(string s,int color){
+        int lst=1;
+        for(char c:s){
+            lst=extend(c-'a',lst);
+            col[lst].push_back(color);
         }
     }
 
+    void dfs(int u){
+        p[u]=u;
+        for(int v:adj[u]) dfs(v);
+    }
 }sam;
 
+bool cmp(int x,int y){
+    return sam.len[x]>sam.len[y];
+}
 
-int main(){
+void initpre(){
+    for(int i=0;i<MN;i++) pre[i]=i;
+}
+
+int root(int x){
+    return pre[x]==x?x:pre[x]=root(pre[x]);
+}
+
+void solve(){
+    sort(p+1,p+1+sam.tot,cmp);
+    for(int i=1;i<=sam.tot;i++){
+        int u=p[i];
+        id[u]=0;
+        if(!col[u].empty()){
+            id[u]=root(col[u][0]);
+            for(int j=1;j<col[u].size();j++){
+                int v=root(col[u][j]);
+                if(v!=id[u]){
+                    ans+=sam.len[u];
+                    pre[v]=id[u];
+                }
+            }
+        }
+        for(int v:sam.adj[u]){
+            int rv=root(id[v]);
+            if(!rv) continue;
+            if(!id[u]) id[u]=rv;
+            else if(rv!=id[u]){
+                ans+=sam.len[u];
+                pre[rv]=id[u];
+            }
+        }
+    }
+}
+
+signed main(){
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    initpre();
     cin>>n;
-    sam.init();
     for(int i=1;i<=n;i++){
         string s;
         cin>>s;
-        sam.insert(s);
+        sam.insert(s,i);
     }
-    ll ans=0;
-    for(int i=2;i<=sam.tot;i++){
-        ans+=sam.len[i]-sam.len[sam.fa[i]];
-    }
-    cout<<ans<<"\n"<<sam.tot;
+    sam.inittree();
+    sam.dfs(1);
+    solve();
+    cout<<ans;
     return 0;
 }
