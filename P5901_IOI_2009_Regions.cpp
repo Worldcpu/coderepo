@@ -1,84 +1,80 @@
 #include<bits/stdc++.h>
 using namespace std;
-constexpr int MN=1e6+15,ML=30,MB=500;
-int n,R,q,r[MN],id[MN],idtot;
-vector<int> adj[MN];
-vector<int> col[MN],obl;
+constexpr int MN=2e5+15,ML=30,MK=2.5e4+15;
+int n,r,q,ccnt[MN],fid[MN],id[MN],cf[MN],MB;
+int ans[520][MK];
+vector<int> adj[MN],col[MN],dcol[MN];
 
 namespace Tree{
-    int dfn[MN],st[31][MN],dtot;
-    
-    void dfs1(int u,int pre){
+    int dfn[MN],siz[MN],dtot;
+
+    void dfs(int u,int pre){
         dfn[u]=++dtot;
-        st[0][dfn[u]]=pre;
+        siz[u]=1;
         for(auto v:adj[u]){
             if(v==pre) continue;
-            dfs1(v,u);
+            dfs(v,u);
+            siz[u]+=siz[v];
         }
     }
 
     int cmpdfn(int x,int y){
-        return dfn[x]<dfn[y]?x:y;
-    }
-
-    bool scmpdfn(int x,int y){
         return dfn[x]<dfn[y];
-    }
-
-    void initst(){
-        for(int i=1;i<=ML;i++){
-            for(int j=1;j+(1<<i)-1<=n;j++){
-                st[i][j]=cmpdfn(st[i-1][j],st[i-1][j+(1<<(i-1))]);
-            }
-        }
-    }
-
-    int lca(int x,int y){
-        if(x==y) return x;
-        x=dfn[x],y=dfn[y];
-        if(x>y) swap(x,y);
-        int lg=__lg(y-x++);
-        return cmpdfn(st[lg][x],st[lg][y-(1<<lg)+1]);
     }
 }using namespace Tree;
 
-namespace T1{
-    int ans[MB+15][MN],cnt[MB+15];
-    void dfst1(int u){
-        for(int i=1;i<=idtot;i++) ans[i][r[u]]-=cnt[i];
-        for(auto v:adj[u]){
-            dfst1(v);
-        }
-        cnt[id[r[u]]]++;
-        for(int i=1;i<=idtot;i++) ans[i][r[u]]+=cnt[i];
-    }
+bool cmp(int x,int y){
+    return ccnt[x]>ccnt[y];
 }
 
-namespace T2{
-    
-}
-
-int main(){
-    cin>>n>>R>>q>>r[1];
-    for(int i=2;i<=n;i++){
-        int u;
-        cin>>u>>r[i];
-        adj[u].push_back(i);
-        adj[i].push_back(u);
-        col[r[i]].push_back(i);
-    }
-    dfs1(1,0);
-    initst();
+signed main(){
+    ios::sync_with_stdio(0);
+    cin>>n>>r>>q;
+    MB=sqrt(n*__lg(n)*2);
     for(int i=1;i<=n;i++){
-        col[r[i]].push_back(i);
+        int fa,color;
+        if(i!=1){
+            cin>>fa;
+            adj[fa].push_back(i);
+        }
+        cin>>color;
+        col[color].push_back(i);
+        ccnt[color]++;
     }
-    for(int i=1;i<=R;i++){
-        sort(col[i].begin(),col[i].end(),scmpdfn);
+    for(int i=1;i<=r;i++) id[i]=i;
+    sort(id+1,id+1+r,cmp);
+    dfs(1,0);
+    for(int i=1;i<=r;i++){
+        fid[id[i]]=i;
+        for(auto p:col[i]) dcol[i].push_back(dfn[p]);
+        sort(dcol[i].begin(),dcol[i].end());
     }
-    for(int i=1;i<=R;i++){
-        if(col[i].size()>MB) id[i]=++idtot; 
+    for(int i=1;i<=r&&ccnt[id[i]]>=MB;i++){
+        for(int i=1;i<=n+1;i++) cf[i]=0;
+        for(auto p:col[id[i]]){
+            cf[dfn[p]]++;
+            cf[dfn[p]+siz[p]]--;
+        }
+        for(int i=1;i<=n+1;i++){
+            cf[i]+=cf[i-1];
+        }
+        for(int j=1;j<=r;j++){
+            for(auto p:col[j]){
+                ans[i][j]+=cf[dfn[p]];
+            }
+        }
     }
-    
+    while(q--){
+        int x,y;
+        cin>>x>>y;
+        if(ccnt[x]<MB){
+            long long ret=0;
+            for(auto p:col[x]){
+                ret+=upper_bound(dcol[y].begin(),dcol[y].end(),dfn[p]+siz[p]-1)-lower_bound(dcol[y].begin(),dcol[y].end(),dfn[p]);
+            }
+            cout<<ret<<endl;
+        }else cout<<ans[fid[x]][y]<<endl;
+    }
     
     return 0;
 }
