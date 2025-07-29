@@ -9,7 +9,7 @@ struct xxj{
     int p[MN];
 
     void insert(int x){
-        for(int i=52;i>=0;i--){
+        for(int i=19;i>=0;i--){
             if((x>>i)&1){
                 if(!p[i]){
                     p[i]=x;
@@ -36,8 +36,8 @@ signed main(){
     for(int i=1;i<=n;i++){
         int x,ret=0;
         cin>>x;
-        for(int j=0;j<20;j++){
-            if(x%pri[j]){
+        for(int j=0;j<19;j++){
+            if(x%pri[j]==0){
                 int now=0;
                 while(x%pri[j]==0){
                     x/=pri[j];
@@ -48,10 +48,10 @@ signed main(){
         }
         xj.insert(ret);
     }
-    for(int i=1;i<=52;i++){
+    for(int i=0;i<=19;i++){
         if(xj.p[i]) n--;
     }
-    cout<<(ksm(2,n)-1+MOD)%MOD;
+    cout<<(ksm(2,n)-1)%MOD;
     
     return 0;
 }
