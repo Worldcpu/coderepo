@@ -1,9 +1,8 @@
 #include <algorithm>
-#include<bits/stdc++.h>
-#include <ctime>
+#include <bits/stdc++.h>
 #define int long long
 using namespace std;
-constexpr int MN=1e5+15,INF=1e9;
+constexpr int MN=1e5+15,INF=1e18;
 struct Query{
     int t,x,a;
 }qry[MN];
@@ -27,7 +26,8 @@ struct Segment{
             for(int y1=0;y1<2;y1++){
                 for(int x2=0;x2<2;x2++){
                     for(int y2=0;y2<2;y2++){
-                        t[p].f[x1][y1]=max(t[p].f[x1][y2],t[ls].f[x1][y1]+t[rs].f[x2][y2]+(x2&y1)*t[p].val);
+                        int addv=(y1&x2)*t[p].val;
+                        t[p].f[x1][y2]=max(t[p].f[x1][y2],t[ls].f[x1][y1]+t[rs].f[x2][y2]+addv);
                     }
                 }
             }
@@ -74,15 +74,16 @@ struct Segment{
     }
 
     void modifyg(int p,int fl,int fr,int k){
+        if(t[p].l>fr || t[p].r<fl) return;
         if(t[p].l>=fl&&t[p].r<=fr){
             doadd(p,k);
             return;
         }
         pushdown(p);
         int mid=(t[p].l+t[p].r)>>1;
-        if(mid>=fl) modifyg(ls,fl,fr,k);
-        if(mid<fr) modifyg(rs,fl,fr,k);
-        if(mid>=fl&&mid<fr) t[p].val+=k;
+        modifyg(ls,fl,fr,k);
+        modifyg(rs,fl,fr,k);
+        if(fl<=mid&&mid+1<=fr) t[p].val+=k;
         pushup(p); 
     }
 
@@ -99,7 +100,6 @@ struct Segment{
 #undef ls
 #undef rs
 }sg;
-
 
 signed main(){
     cin>>q>>L;
@@ -120,7 +120,8 @@ signed main(){
             int pos=lower_bound(lsan+1, lsan+1+tot, qry[i].x)-lsan;
             sg.modifyf(1,pos,qry[i].a);
         }else{
-            int posl=lower_bound(lsan+1,lsan+1+tot,qry[i].x-L)-lsan,posr=upper_bound(lsan+1,lsan+1+tot,qry[i].x+L)-lsan-1;
+            int posl=lower_bound(lsan+1,lsan+1+tot,qry[i].x-L)-lsan;
+            int posr=upper_bound(lsan+1,lsan+1+tot,qry[i].x+L)-lsan-1;
             sg.modifyg(1,posl,posr,qry[i].a);
         }
         cout<<ans-sg.query()<<'\n';
