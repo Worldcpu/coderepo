@@ -1,5 +1,16 @@
 {
     "files.associations": {
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "bitset": "cpp",
+        "compare": "cpp",
+        "optional": "cpp",
+        "random": "cpp",
+        "format": "cpp",
+        "istream": "cpp",
+        "numeric": "cpp",
+        "stacktrace": "cpp",
+        "streambuf": "cpp",
+        "regex": "cpp",
+        "valarray": "cpp"
     }
 }
