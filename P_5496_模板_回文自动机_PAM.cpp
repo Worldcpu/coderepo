@@ -25,7 +25,6 @@ struct PAM{
     }
 
     void insert(int c,int id){
-        cerr<<id<<" ";
         int p=getfail(lst,id);
         if(!nxt[p][c]){
             fail[++tot]=nxt[getfail(fail[p],id)][c];
