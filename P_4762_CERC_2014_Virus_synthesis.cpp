@@ -41,14 +41,13 @@ struct PAM{
             if(len[tot]<=2) half[tot]=fail[tot];
             else{
                 int hp=half[p];
-                while(st[p-len[hp]-1]!=st[p]||(len[hp]+2<<1)>len[tot]){
+                while(st[id-len[hp]-1]!=st[id]||(len[hp]+2<<1)>len[tot]){
                     hp=fail[hp];
                 }
                 half[tot]=nxt[hp][c];
             }
         }
         lst=nxt[p][c];
-    
     }
 
     void build(){

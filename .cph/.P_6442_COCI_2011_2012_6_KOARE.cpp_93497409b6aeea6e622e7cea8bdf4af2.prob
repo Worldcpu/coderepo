@@ -1,0 +1,1 @@
+{"name":"Local: P_6442_COCI_2011_2012_6_KOARE","url":"d:\\wjy\\P_6442_COCI_2011_2012_6_KOARE.cpp","tests":[{"id":1754043904543,"input":"3 3\n3 1 2 3\n3 1 2 3\n3 1 2 3","output":"7"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"d:\\wjy\\P_6442_COCI_2011_2012_6_KOARE.cpp","group":"local","local":true}
