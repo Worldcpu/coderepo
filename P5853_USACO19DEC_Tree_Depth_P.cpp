@@ -10,7 +10,7 @@ void undo(int x){
     int cur=MOD-1;
     for(int i=1;i<=sz-x;i++){
         if(i>x){
-            cur=(cur+g[i-x+1]+MOD)%MOD;
+            cur=(cur+g[i-x-1]+MOD)%MOD;
         }
         g[i]=(f[n&1][i]+cur+MOD)%MOD;
         cur=(cur-g[i]+MOD)%MOD;
