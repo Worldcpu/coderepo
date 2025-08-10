@@ -5,9 +5,8 @@
 using namespace std;
 int main()
 {
-    system("chcp 65001");
     int ok = 0;
-    int n = 10000;
+    int n = 2;
     for (int i = 1; i <= n; ++i)
     {
         system("./gen");
@@ -28,6 +27,7 @@ int main()
         }
         else
         {
+            printf("测试点#%d Accept 用时 %.0lfms\n", i, t);
             ok++; //AC数量+1
         }
     }

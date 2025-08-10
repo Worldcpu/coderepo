@@ -1,11 +1,10 @@
 #include<bits/stdc++.h>
-#define int unsigned int
 #define pir pair<int,int>
 using namespace std;
 constexpr int MN = 1000000 + 15;
 const int N = 1000000; 
 
-int T, mu[MN], d[MN], ans[MN];
+int T, mu[MN], d[MN],g[MN], ans[MN];
 pir pr[MN];
 static bool mark[MN];
 
@@ -51,16 +50,19 @@ void euler(int n){
             p.push_back(i);
             mu[i] = -1;
             d[i] = i + 1;
+            g[i]=i+1;
         }
         for(size_t j = 0; j < p.size() && i * p[j] <= n; j++){
             int tmp = i * p[j];
             mark[tmp] = true;
             if(i % p[j] == 0){
                 mu[tmp] = 0;
-                d[tmp] = d[i] * p[j] + 1;
+                g[tmp] = g[i] * p[j] + 1;
+                d[tmp]=d[i]/g[i]*g[tmp];
                 break;
             } else {
                 mu[tmp] = -mu[i];
+                g[tmp]=p[j]+1;
                 d[tmp] = d[i] * d[p[j]];
             }
         }
@@ -96,7 +98,7 @@ signed main(){
     }
 
     for(int i=1;i<=T;i++){
-        cout << ans[i] << '\n';
+        cout << (ans[i]&(~(1<<31))) << '\n';
     }
     return 0;
 }

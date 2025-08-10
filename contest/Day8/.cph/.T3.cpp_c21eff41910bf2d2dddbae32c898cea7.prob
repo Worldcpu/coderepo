@@ -1,0 +1,1 @@
+{"name":"Local: T3","url":"/home/noi/wjy/contest/Day8/T3.cpp","tests":[{"id":1754807952042,"input":"abcab\n1 2 4\n","output":"5"},{"id":1754807963314,"input":"abcab\n2 2 1\n","output":"9"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"/home/noi/wjy/contest/Day8/T3.cpp","group":"local","local":true}

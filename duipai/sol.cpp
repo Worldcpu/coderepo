@@ -1,71 +1,95 @@
-#include <bits/stdc++.h>
-#define inl inline
-#define rg register
-#define R rg int
-using namespace std;
-inl int Get(char c){
-    return (c>='a'&&c<='z')?c-'a':(26+c-'A');
+#include <cstdio>
+#include <iostream>
+#include <cstring>
+#include <cmath>
+#include <algorithm>
+
+typedef long long ll;
+const int Q = 20001;
+const int N = 100001;
+const ll P = 1ll << 31;
+
+inline int read() {
+	int x = 0, f = 1; char ch = getchar();
+	while(ch > '9' || ch < '0') { if(ch == '-') f = -1; ch = getchar(); }
+	do x = x * 10 + ch - 48, ch = getchar(); while(ch >= '0' && ch <= '9');
+	return x * f;
 }
-constexpr int N=305,M=N*5+2;
-// ACAM
-int ch[M][52],fail[M],ban[M],cnt=1;
-void ins(char *s,int len,int v){
-    int u=1;
-    for(R i=0;i<len;i++){
-        R c=Get(s[i]);
-        if(!ch[u][c])ch[u][c]=++cnt;
-        u=ch[u][c];
-    }
-    ban[u]|=v;
+
+int T;
+struct Query {
+	int n,m,a,id;
+	friend bool operator <(const Query &x,const Query &y) {
+		return x.a < y.a;
+	}
+} q[Q];
+
+int mk[N],p[N],tot; ll sgm[N],pw[N],mu[N];
+int number[N];
+bool cmp(int x,int y) { return sgm[x] < sgm[y]; }
+
+void Seive() {
+	sgm[1] = pw[1] = mu[1] = 1;
+	for(int i = 2;i < N;i++) {
+		if(!mk[i]) {
+			p[++tot] = i;
+			sgm[i] = i + 1, pw[i] = i;
+			mu[i] = P - 1;
+		}
+		for(int j = 1;j <= tot && p[j] * i < N;j++) {
+			mk[i * p[j]] = true;
+			if(i % p[j]) {
+				pw[i * p[j]] = p[j];
+				sgm[i * p[j]] = sgm[i] * (p[j] + 1);
+				mu[i * p[j]] = P - mu[i];
+			} else {
+				pw[i * p[j]] = pw[i] * p[j];
+				if(i == pw[i]) sgm[i * p[j]] = sgm[i] * p[j] + 1;
+				else sgm[i * p[j]] = sgm[i / pw[i]] * sgm[pw[i] * p[j]];
+				mu[i * p[j]] = 0;
+				break;
+			}
+		}
+	}
+	return;
 }
-void bfs(){
-    for(R i=0;i<52;i++)ch[0][i]=1;
-    queue<int>q;q.push(1);
-    while(!q.empty()){
-        int u=q.front();q.pop();ban[u]|=ban[fail[u]];
-        for(R i=0;i<52;i++)
-            if(!ch[u][i])ch[u][i]=ch[fail[u]][i];
-            else fail[ch[u][i]]=ch[fail[u]][i],q.push(ch[u][i]);
-    }
+
+ll fen[N],Ans[N];
+void Add(int x,ll v) {
+	for(;x < N;x += x & (-x)) fen[x] = (fen[x] + v) % P;
 }
-// 子序列自动机
-int ch1[N][52],ch2[N][52];
-void build(char* s,char* r,R n,R m){
-    for(R i=n;i;i--)
-        memcpy(ch1[i],ch1[i+1],sizeof ch1[i]),
-        ch1[i][Get(s[i])]=i+1;
-    for(R i=m;i;i--)
-        memcpy(ch2[i],ch2[i+1],sizeof ch2[i]),
-        ch2[i][Get(r[i])]=i+1;
+ll Sum(int l,int r) {
+	ll res = 0; l--;
+	for(;r;r -= r & (-r)) res = (res + fen[r]) % P;
+	for(;l;l -= l & (-l)) res = (res - fen[l] + P) % P;
+	return res;
 }
-// sol
-int n,m,K;
-struct node{
-    int x,y,z,Ban;
-    bool operator < (const node &b)const{
-        if(x^b.x)return x<b.x;
-        if(y^b.y)return y<b.y;
-        if(z^b.z)return z<b.z;
-        return Ban<b.Ban;
-    }
-};
-map<node,int>mp;
-int sol(R x,R y,R z,R vis){
-    if(mp.count({x,y,z,vis}))return mp[{x,y,z,vis}];
-    int ans=-1e9;if(vis==(1<<K)-1)ans=0;
-    for(R i=0;i<52;i++){
-        int nx=ch1[x][i],ny=ch2[y][i],nz=ch[z][i],nv=vis|ban[nz];
-        if(!nx||!ny)continue; ans=max(ans,sol(nx,ny,nz,nv)+1);
-    }
-    return mp[{x,y,z,vis}]=ans;
+
+int main() {
+	T = read();
+	for(int i = 1;i <= T;i++) q[i].n = read(), q[i].m = read(), q[i].a = read();
+	for(int i = 1;i <= T;i++) q[i].id = i;
+	std::sort(q + 1,q + 1 + T);
+	Seive();
+	for(int i = 1;i < N;i++) number[i] = i;
+	std::sort(number + 1,number + N,cmp);
+	int rg = 1;
+	for(int i = 1;i <= T;i++) {
+		while(sgm[number[rg]] <= q[i].a && rg < N) {
+			for(int j = 1;number[rg] * j < N;j++)
+				Add(number[rg] * j,(1ll * sgm[number[rg]] * mu[j]) % P);
+			rg++;
+		}
+		ll ans = 0;
+		for(int l = 1;l <= q[i].n && l <= q[i].m;l++) {
+			int r = std::min(q[i].n / (q[i].n / l),q[i].m / (q[i].m / l));
+			ans = (ans + 1ll * Sum(l,r) * (q[i].n / l) % P * (q[i].m / l)) % P;
+			l = r;
+		}
+		// std::printf("%lld\n",ans);
+		Ans[q[i].id] = ans;
+	}
+	for(int i = 1;i <= T;i++) std::printf("%lld\n",Ans[i]);
+	return 0;
 }
-char buf[N],Buf[N];int length[N];
-int main(){
-    scanf("%d %d %d",&n,&m,&K);
-    for(R i=1;i<=K;i++)scanf("%d",&length[i]);
-    scanf(" %s %s",buf+1,Buf+1);build(buf,Buf,n,m);
-    for(R i=1;i<=K;i++)scanf(" %s",buf),ins(buf,length[i],1<<i-1);
-    bfs();
-    cout<<sol(1,1,1,0);
-    return 0;
-}
+
