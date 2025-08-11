@@ -12,5 +12,6 @@
         "streambuf": "cpp",
         "regex": "cpp",
         "valarray": "cpp"
-    }
+    },
+    "clangd.showInStatusBar": "always"
 }
