@@ -2,7 +2,7 @@
 #define double long double
 using namespace std;
 using compd=complex<double>;
-const int MN=8e4+15,MM=119,MR=MN<<2;
+const int MN=1e5+15,MM=151,MR=MN<<2;
 int n,m,t,x,u[MM],v[MM],w[MM],dis[MM][MM];
 double f[MM][MN],g[MM][MN],p[MM][MN];
 compd F[MN],G[MN],Ans[MN];
@@ -112,6 +112,6 @@ signed main(){
         }
     }
     PolyFFT::cdq(0,t);
-    cout<<fixed<<setprecision(8)<<min(f[1][0],(double)x+dis[1][n]);
+    cout<<fixed<<setprecision(10)<<min(f[1][0],(double)x+dis[1][n]);
     return 0;
 }
