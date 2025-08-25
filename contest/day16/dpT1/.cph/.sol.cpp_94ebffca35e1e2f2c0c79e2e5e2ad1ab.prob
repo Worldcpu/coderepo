@@ -1,0 +1,1 @@
+{"name":"Local: sol","url":"/home/noi/wjy/contest/day16/dpT1/sol.cpp","tests":[{"id":1755834519331,"input":"6 10\n3 6 5 1 2 6\n1 1 3 8\n1 2 3 9\n1 2 5 4\n1 2 3 9\n2 1 3\n1 33 33 38\n1 32 32 35\n2 35 33\n1 36 34 36\n2 39 35\n","output":""}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"/home/noi/wjy/contest/day16/dpT1/sol.cpp","group":"local","local":true}

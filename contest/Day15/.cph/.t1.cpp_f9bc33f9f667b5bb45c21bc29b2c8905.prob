@@ -1,0 +1,1 @@
+{"name":"Local: t1","url":"/home/noi/wjy/contest/Day15/t1.cpp","tests":[{"id":1755562121247,"input":"##c\n3\nabcedf\nbbcsdf\nacbdf\n","output":"2"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"/home/noi/wjy/contest/Day15/t1.cpp","group":"local","local":true}

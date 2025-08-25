@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 #define int long long
 using namespace std;
-constexpr int MN = 1500, MOD = 1e9 + 7;
+constexpr int MN = 1520, MOD = 1e9 + 7;
 int n, m, a, b, K;
 
 struct node

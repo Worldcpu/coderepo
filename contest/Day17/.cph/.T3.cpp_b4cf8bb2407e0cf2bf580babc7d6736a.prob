@@ -1,0 +1,1 @@
+{"name":"Local: T3","url":"/home/noi/wjy/contest/Day17/T3.cpp","tests":[{"id":1756007090455,"input":"3 5 2 3\n-82 -37\n69 60\n-98 27\n34 24\n73 100\n35 30\n92 65\n-65 66\n-81 -87\n48 -97\n-83 26\n\n","output":"2927"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"/home/noi/wjy/contest/Day17/T3.cpp","group":"local","local":true}
