@@ -1,7 +1,9 @@
 #include<bits/stdc++.h>
+#define int long long
 using namespace std;
-constexpr int dw=1000,up=2000;
+constexpr int N=50,M=5e4;
 mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+string s[3]={"qwqwqwq","block","ask"};
 
 int getrd(int l,int r){
     return rnd()%(r-l+1)+l;
@@ -11,11 +13,10 @@ signed main(){
     ios::sync_with_stdio(0);
     cout.tie(0);
     freopen("dp.in","w",stdout);
-    int T=getrd(dw,up);
-    cout<<T<<'\n';
-    for(int i=1;i<=T;i++){
-        int n=getrd(dw,up),m=getrd(dw,up);
-        if(n>m) swap(n,m);
-        cout<<n<<' '<<m<<' '<<min(n,m)-getrd(1,min(n,m)-2)<<'\n';
+    cout<<N<<' '<<M<<'\n';
+    for(int i=1;i<=M;i++){
+        int op=getrd(1,2),l=getrd(1,(1<<N)-1),r=getrd(1,(1<<N)-1);
+        if(l>r) swap(l,r);
+        cout<<s[op]<<' '<<l<<' '<<r<<'\n';
     }
 }
