@@ -19,7 +19,7 @@ multiset<Node> st[MN];
 
 void merge(int x,int y){
     if(st[x].size()<st[y].size()) swap(st[x],st[y]),swap(tag[x],tag[y]); 
-    int mnx=(!st[x].size())?0:(*st[x].begin()).cst,mny=(!st[y].empty())?0:(*st[y].begin()).cst;
+    int mnx=(!st[x].size())?0:(*st[x].begin()).cst,mny=(!st[y].size())?0:(*st[y].begin()).cst;
     while(!st[y].empty()){
         auto tp=(*st[y].begin());
         st[y].erase(st[y].begin());
@@ -72,7 +72,9 @@ signed main(){
     if(!flag){
         cout<<-1;
         return 0;
-    }else cout<<st[1].begin()->cst+tag[1];
+    }
+    else if(m==1) cout<<0;
+    else cout<<st[1].begin()->cst+tag[1];
 
     return 0;
 }

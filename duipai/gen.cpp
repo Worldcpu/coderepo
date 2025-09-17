@@ -1,22 +1,32 @@
 #include<bits/stdc++.h>
-#define int long long
 using namespace std;
-constexpr int N=50,M=5e4;
-mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
-string s[3]={"qwqwqwq","block","ask"};
-
-int getrd(int l,int r){
-    return rnd()%(r-l+1)+l;
-}
-
-signed main(){
-    ios::sync_with_stdio(0);
-    cout.tie(0);
+random_device seed;
+mt19937 mt(seed());
+const int N = 1000000,V = 100000;
+int a[N];
+int main(){
     freopen("dp.in","w",stdout);
-    cout<<N<<' '<<M<<'\n';
-    for(int i=1;i<=M;i++){
-        int op=getrd(1,2),l=getrd(1,(1<<N)-1),r=getrd(1,(1<<N)-1);
-        if(l>r) swap(l,r);
-        cout<<s[op]<<' '<<l<<' '<<r<<'\n';
-    }
+	int n = 200,m = 1000;
+	cout<<n<<' '<<m<<'\n';
+	for(int i = 1;i<=n;i++){
+		cout<<(a[i] = mt()%V)<<' ';
+	}
+	cout<<'\n';
+	for(int i = 1;i<=m;i++){
+		int op = mt()%2 + 1,l = mt()%n + 1,r = mt()%n + 1;
+		if(l > r){
+			swap(l,r);
+		}
+		if(op == 1){
+			int v = mt()%V;
+			for(int i = l;i<=r;i++){
+				if(a[i] > v){
+					a[i]-=v;
+				}
+			}
+			cout<<op<<' '<<l<<' '<<r<<' '<<v<<'\n';
+		}else{
+			cout<<op<<' '<<l<<' '<<r<<' '<<(a[mt()%(r - l + 1) + l])%V<<'\n';
+		}
+	}
 }
