@@ -1,1 +1,0 @@
-{"name":"Local: T2","url":"/home/noi/wjy/contest/day10/T2.cpp","tests":[{"id":1755138889115,"input":"5 5\n 1 2\n 2 3\n 3 4\n 3 5","output":""},{"id":1755142359726,"input":" 4 2\n 1 2\n 2 3\n 3 4","output":""}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"/home/noi/wjy/contest/day10/T2.cpp","group":"local","local":true}

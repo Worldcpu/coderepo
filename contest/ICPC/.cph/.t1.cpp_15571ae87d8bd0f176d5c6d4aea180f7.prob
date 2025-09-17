@@ -1,1 +1,0 @@
-{"name":"Local: t1","url":"d:\\wjy\\contest\\ICPC\\t1.cpp","tests":[{"id":1753857783333,"input":"5 60000\n630510219 369411957 874325200 990002527 567203997\n438920902 634940661 593780254 315929832 420627496\n","output":""}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"d:\\wjy\\contest\\ICPC\\t1.cpp","group":"local","local":true}

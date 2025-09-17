@@ -1,1 +1,0 @@
-{"name":"Local: luotianyi","url":"/home/noi/wjy/contest/day10/luotianyi.cpp","tests":[{"id":1755129628727,"input":"4 2\n1 2\n2 3\n3 4\n","output":""},{"id":1755129634525,"input":"5 5\n1 2\n2 3\n3 4\n3 5\n","output":""}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"/home/noi/wjy/contest/day10/luotianyi.cpp","group":"local","local":true}

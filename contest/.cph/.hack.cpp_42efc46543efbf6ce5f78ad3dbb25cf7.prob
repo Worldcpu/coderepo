@@ -1,1 +1,0 @@
-{"name":"Local: hack","url":"d:\\wjy\\contest\\hack.cpp","tests":[{"id":1753415761702,"input":"4 4\n1 1 1 1\n","output":""},{"id":1753415775228,"input":"8 100000\n21 37 23 13 32 22 9 39\n","output":""}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"d:\\wjy\\contest\\hack.cpp","group":"local","local":true}
