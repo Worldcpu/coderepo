@@ -24,8 +24,6 @@ void initpre(int n){
 }
 
 signed main(){
-    freopen("oblivious.in", "r", stdin);
-    freopen("oblivious.out", "w", stdout);
     cin>>n>>r>>c;
     initpre(r+c);
     for(int i=1;i<=n;i++){
